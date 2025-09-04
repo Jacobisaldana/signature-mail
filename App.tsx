@@ -138,7 +138,7 @@ function App() {
           <div className={`p-4 md:p-8 ${activeTab === Tab.Preview ? 'block' : 'hidden'}`}>
             {generatedSignatures.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="flex flex-col gap-8">
                   {generatedSignatures.map(sig => <SignaturePreview key={sig.id} signature={sig} />)}
                 </div>
                 <InstallationGuide />
