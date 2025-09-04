@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Signature } from '../types';
 
 interface SignaturePreviewProps {
@@ -9,11 +9,21 @@ interface SignaturePreviewProps {
 export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature }) => {
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(signature.html.trim());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const adjustIframeHeight = () => {
+    const iframe = iframeRef.current;
+    if (iframe && iframe.contentWindow) {
+      const contentHeight = iframe.contentWindow.document.body.scrollHeight;
+      // Add a small buffer to prevent scrollbars from appearing in some cases
+      iframe.style.height = `${contentHeight + 5}px`;
+    }
   };
   
   // Basic HTML formatter for display
@@ -55,8 +65,17 @@ export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature })
         </div>
       </div>
       
-      <div className="p-6 bg-gray-100 min-h-[150px] flex items-center justify-center">
-         <div dangerouslySetInnerHTML={{ __html: signature.html }} />
+      <div className="p-6 bg-gray-100 min-h-[150px] overflow-x-auto">
+         <iframe
+            ref={iframeRef}
+            srcDoc={`<!DOCTYPE html><html><head><style>body{margin:0;padding:0;}</style></head><body>${signature.html}</body></html>`}
+            title={`${signature.name} Preview`}
+            onLoad={adjustIframeHeight}
+            scrolling="no"
+            frameBorder="0"
+            className="w-full"
+            style={{ minWidth: '500px' }} // Prevent narrow signatures from breaking layout
+         />
       </div>
 
       {showCode && (
