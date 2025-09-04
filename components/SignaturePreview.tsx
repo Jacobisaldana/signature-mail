@@ -1,0 +1,71 @@
+
+import React, { useState } from 'react';
+import { Signature } from '../types';
+
+interface SignaturePreviewProps {
+  signature: Signature;
+}
+
+export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature }) => {
+  const [showCode, setShowCode] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(signature.html.trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
+  // Basic HTML formatter for display
+  const formatHtml = (html: string) => {
+    const tab = '  ';
+    let result = '';
+    let indent = '';
+
+    html.split(/>\s*</).forEach(element => {
+        if (element.match( /^\/\w/ )) {
+            indent = indent.substring(tab.length);
+        }
+        result += indent + '<' + element + '>\r\n';
+        if (element.match( /^<?\w[^>]*[^\/]$/ ) && !element.startsWith("img")) { 
+            indent += tab;
+        }
+    });
+
+    return result.substring(1, result.length-2);
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+      <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+        <h3 className="text-md font-semibold text-gray-800">{signature.name}</h3>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowCode(!showCode)}
+            className="px-3 py-1 text-xs font-semibold text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"
+          >
+            {showCode ? 'Hide Code' : 'View Code'}
+          </button>
+          <button
+            onClick={handleCopy}
+            className={`px-3 py-1 text-xs font-semibold rounded-md transition ${copied ? 'bg-green-500 text-white' : 'bg-amber-500 hover:bg-amber-600 text-black'}`}
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      </div>
+      
+      <div className="p-6 bg-gray-100 min-h-[150px] flex items-center justify-center">
+         <div dangerouslySetInnerHTML={{ __html: signature.html }} />
+      </div>
+
+      {showCode && (
+        <div className="bg-gray-800 p-4">
+          <pre className="text-white text-xs overflow-x-auto whitespace-pre-wrap break-all">
+            <code>{formatHtml(signature.html.trim())}</code>
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+};
