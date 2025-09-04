@@ -103,7 +103,7 @@ function App() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <header className="text-center mb-8 flex flex-col items-center">
             <img src={LOGO_URL} alt="Logo" className="h-20 w-20 mb-4" />
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">Signature Spark</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">MAS Signature Free</h1>
           <p className="mt-2 text-lg text-gray-600">Craft professional, custom email signatures in seconds.</p>
         </header>
 

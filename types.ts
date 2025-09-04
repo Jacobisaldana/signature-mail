@@ -1,4 +1,5 @@
-import { ReactElement } from 'react';
+// FIX: Import React to provide the React namespace for React.FC and remove the unused ReactElement import.
+import React from 'react';
 
 export interface FormData {
   fullName: string;
