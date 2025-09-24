@@ -54,18 +54,20 @@ const generateCalendarButton = (data: FormData, colors: BrandColors): string => 
 
 const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
   [TemplateId.Modern]: ({ data, colors, imageData }) => `
-    <table cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 14px; color: ${colors.text}; background-color: ${colors.background}; border-radius: 8px; padding: 20px; border-left: 5px solid ${colors.primary};">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Arial, sans-serif; font-size: 14px; color: ${colors.text}; background-color: ${colors.background}; border-left: 5px solid ${colors.primary}; table-layout: fixed;">
       <tr>
-        ${imageData ? `<td style="vertical-align: top; padding-right: 20px;"><img src="${imageData}" alt="${data.fullName}" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 2px solid ${colors.primary};"></td>` : ''}
-        <td style="vertical-align: top;">
+        ${imageData ? `<td valign="top" width="110" style="padding:16px 20px 16px 20px;"><img src="${imageData}" alt="${data.fullName}" width="90" height="90" style="display:block; border-radius: 50%; border: 2px solid ${colors.primary};"></td>` : ''}
+        <td valign="top" style="padding:16px 20px 16px 20px;">
           <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: ${colors.primary};">${data.fullName}</h3>
           <p style="margin: 2px 0; color: ${colors.secondary};">${data.jobTitle} | ${data.company}</p>
           ${data.tagline ? `<p style="margin: 8px 0 10px 0; font-style: italic; color: ${colors.secondary}; font-size: 12px;">“${data.tagline}”</p>` : '<div style="height: 10px;"></div>'}
-          <div style="border-top: 1px solid #eeeeee; padding-top: 8px;">
+          <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-top: 1px solid #eeeeee; padding-top: 8px;">
+            <tr><td>
             ${data.phone ? `<p style="margin: 4px 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
             ${data.email ? `<p style="margin: 4px 0;"><img src="${iconUrls.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
             ${data.website ? `<p style="margin: 4px 0;"><img src="${iconUrls.website}" alt="Website" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="${data.website}" target="_blank" style="color: ${colors.text}; text-decoration: none;">${data.website.replace(/https?:\/\//, '')}</a></p>` : ''}
-          </div>
+            </td></tr>
+          </table>
           ${generateCalendarButton(data, colors)}
           <div style="margin-top: 12px;">${generateSocialIcons(data)}</div>
         </td>
@@ -73,7 +75,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
     </table>
   `,
   [TemplateId.Minimalist]: ({ data, colors, imageData }) => `
-    <table cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: ${colors.text}; line-height: 1.5;">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: ${colors.text}; line-height: 1.5; table-layout: fixed;">
       <tr>
         <td style="border-left: 2px solid ${colors.primary}; padding-left: 15px;">
           <p style="margin: 0; font-weight: bold; color: ${colors.primary}; font-size: 16px;">${data.fullName}</p>
@@ -103,14 +105,14 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
     </table>
   `,
   [TemplateId.Vertical]: ({ data, colors, imageData }) => `
-    <table cellpadding="0" cellspacing="0" style="font-family: Calibri, sans-serif; font-size: 14px; color: ${colors.text};">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Calibri, sans-serif; font-size: 14px; color: ${colors.text}; table-layout: fixed;">
       <tr>
-        <td style="vertical-align: top; background-color: ${colors.primary}; padding: 20px; border-radius: 8px 0 0 8px; text-align: center; width: 120px;">
-          ${imageData ? `<img src="${imageData}" alt="${data.fullName}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;">` : ''}
+        <td valign="top" width="140" style="background-color: ${colors.primary}; padding: 20px; border-radius: 8px 0 0 8px; text-align: center;">
+          ${imageData ? `<img src="${imageData}" alt="${data.fullName}" width="80" height="80" style="display:block; border-radius: 50%; margin-bottom: 10px;">` : ''}
           <h3 style="margin: 0; font-size: 16px; font-weight: bold; color: white;">${data.fullName}</h3>
           <p style="margin: 2px 0; color: white; font-size: 12px;">${data.jobTitle}</p>
         </td>
-        <td style="vertical-align: top; background-color: ${colors.background}; padding: 20px; border-radius: 0 8px 8px 0;">
+        <td valign="top" style="background-color: ${colors.background}; padding: 20px; border-radius: 0 8px 8px 0;">
           <p style="margin: 0 0 5px 0; font-weight: bold; color: ${colors.primary};">${data.company}</p>
           ${data.email ? `<p style="margin: 4px 0;"><img src="${iconUrls.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
           ${data.phone ? `<p style="margin: 4px 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
@@ -122,7 +124,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
     </table>
   `,
   [TemplateId.Compact]: ({ data, colors, imageData }) => `
-    <table cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; font-size: 12px; color: ${colors.text};">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Arial, sans-serif; font-size: 12px; color: ${colors.text}; table-layout: fixed;">
       <tr>
         <td style="font-weight: bold; color: ${colors.primary};">${data.fullName}</td>
         <td style="padding: 0 5px; color: #cccccc;">|</td>
@@ -139,10 +141,10 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
     </table>
   `,
   [TemplateId.SocialFocus]: ({ data, colors, imageData }) => `
-    <table cellpadding="0" cellspacing="0" style="font-family: 'Verdana', sans-serif; color: ${colors.text}; font-size: 14px; width: 450px;">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: 'Verdana', sans-serif; color: ${colors.text}; font-size: 14px; width: 450px; table-layout: fixed;">
       <tr>
-        ${imageData ? `<td style="vertical-align: top; padding-right: 15px;"><img src="${imageData}" alt="${data.fullName}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;"></td>` : ''}
-        <td style="vertical-align: top;">
+        ${imageData ? `<td valign="top" width="80" style="padding-right: 15px;"><img src="${imageData}" alt="${data.fullName}" width="60" height="60" style="display:block; border-radius: 8px;"></td>` : ''}
+        <td valign="top">
           <p style="margin: 0; font-weight: bold; color: ${colors.primary}; font-size: 18px;">${data.fullName}</p>
           <p style="margin: 2px 0 8px 0; color: ${colors.secondary};">${data.jobTitle} at ${data.company}</p>
         </td>

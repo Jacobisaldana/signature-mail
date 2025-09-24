@@ -11,10 +11,72 @@ export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature })
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(signature.html.trim());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(signature.html.trim());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      alert('No se pudo copiar el código.');
+    }
+  };
+
+  // Copies rich HTML to clipboard so pasting into Gmail/Outlook preserves formatting
+  const handleCopyRich = async () => {
+    const html = signature.html.trim();
+    try {
+      // Try copying from the live iframe (often preserves table layout best for Gmail)
+      const iframe = iframeRef.current;
+      if (iframe && iframe.contentWindow) {
+        const doc = iframe.contentWindow.document;
+        const range = doc.createRange();
+        range.selectNodeContents(doc.body);
+        const sel = doc.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        const ok = doc.execCommand('copy');
+        sel?.removeAllRanges();
+        if (ok) {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          return;
+        }
+      }
+
+      // Preferred modern API
+      const supportsClipboardItem = 'ClipboardItem' in window && navigator.clipboard && 'write' in navigator.clipboard;
+      if (supportsClipboardItem) {
+        const item = new (window as any).ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([html.replace(/\n+/g, ' ')], { type: 'text/plain' }),
+        });
+        await (navigator.clipboard as any).write([item]);
+      } else {
+        // Fallback: use a hidden, selectable container and execCommand
+        const container = document.createElement('div');
+        container.setAttribute('contenteditable', 'true');
+        // Ensure offscreen and not affecting layout
+        container.style.position = 'absolute';
+        container.style.left = '-9999px';
+        container.style.top = '0';
+        container.innerHTML = html;
+        document.body.appendChild(container);
+
+        const range = document.createRange();
+        range.selectNodeContents(container);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        document.execCommand('copy');
+        document.body.removeChild(container);
+        sel?.removeAllRanges();
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn('Rich copy failed, falling back to code copy', err);
+      await handleCopyCode();
+    }
   };
 
   const adjustIframeHeight = () => {
@@ -57,10 +119,18 @@ export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature })
             {showCode ? 'Hide Code' : 'View Code'}
           </button>
           <button
-            onClick={handleCopy}
+            onClick={handleCopyRich}
             className={`px-3 py-1 text-xs font-semibold rounded-md transition ${copied ? 'bg-green-500 text-white' : 'bg-amber-500 hover:bg-amber-600 text-black'}`}
+            title="Copiar como contenido enriquecido (HTML)"
           >
-            {copied ? 'Copied!' : 'Copy'}
+            {copied ? '¡Copiado!' : 'Copiar Firma'}
+          </button>
+          <button
+            onClick={handleCopyCode}
+            className="px-3 py-1 text-xs font-semibold text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"
+            title="Copiar código HTML"
+          >
+            Copiar Código
           </button>
         </div>
       </div>
