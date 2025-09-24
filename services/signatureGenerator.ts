@@ -6,22 +6,30 @@ interface GeneratorParams {
   imageData: string | null;
 }
 
-const staticIconUrls = {
-    linkedin: "https://contractorcommander.com/wp-content/uploads/2025/09/linkedin.png",
-    twitter: "https://contractorcommander.com/wp-content/uploads/2025/09/twitter.png",
-    instagram: "https://contractorcommander.com/wp-content/uploads/2025/09/instagram.png",
-    facebook: "https://contractorcommander.com/wp-content/uploads/2025/09/social.png",
-    calendar: "https://contractorcommander.com/wp-content/uploads/2025/09/calendar.png",
+// Default icons (fallback). Can be overridden at runtime with setIconUrls.
+let iconUrls = {
+  linkedin: "https://contractorcommander.com/wp-content/uploads/2025/09/linkedin.png",
+  twitter: "https://contractorcommander.com/wp-content/uploads/2025/09/twitter.png",
+  instagram: "https://contractorcommander.com/wp-content/uploads/2025/09/instagram.png",
+  facebook: "https://contractorcommander.com/wp-content/uploads/2025/09/social.png",
+  calendar: "https://contractorcommander.com/wp-content/uploads/2025/09/calendar.png",
+  phone: "https://contractorcommander.com/wp-content/uploads/2025/09/phone.png",
+  email: "https://contractorcommander.com/wp-content/uploads/2025/09/email.png",
+  website: "https://contractorcommander.com/wp-content/uploads/2025/09/website.png",
+};
+
+export const setIconUrls = (urls: Partial<typeof iconUrls>) => {
+  iconUrls = { ...iconUrls, ...urls };
 };
 
 const generateSocialIcons = (data: FormData): string => {
   const icons: string[] = [];
   const iconStyle = `width: 24px; height: 24px; border: 0;`;
   
-  if (data.linkedin) icons.push(`<a href="${data.linkedin}" target="_blank" style="margin-right: 8px;"><img src="${staticIconUrls.linkedin}" alt="LinkedIn" style="${iconStyle}" width="24" height="24" border="0"></a>`);
-  if (data.twitter) icons.push(`<a href="${data.twitter}" target="_blank" style="margin-right: 8px;"><img src="${staticIconUrls.twitter}" alt="X (Twitter)" style="${iconStyle}" width="24" height="24" border="0"></a>`);
-  if (data.instagram) icons.push(`<a href="${data.instagram}" target="_blank" style="margin-right: 8px;"><img src="${staticIconUrls.instagram}" alt="Instagram" style="${iconStyle}" width="24" height="24" border="0"></a>`);
-  if (data.facebook) icons.push(`<a href="${data.facebook}" target="_blank"><img src="${staticIconUrls.facebook}" alt="Website/Social" style="${iconStyle}" width="24" height="24" border="0"></a>`);
+  if (data.linkedin) icons.push(`<a href="${data.linkedin}" target="_blank" style="margin-right: 8px;"><img src="${iconUrls.linkedin}" alt="LinkedIn" style="${iconStyle}" width="24" height="24" border="0"></a>`);
+  if (data.twitter) icons.push(`<a href="${data.twitter}" target="_blank" style="margin-right: 8px;"><img src="${iconUrls.twitter}" alt="X (Twitter)" style="${iconStyle}" width="24" height="24" border="0"></a>`);
+  if (data.instagram) icons.push(`<a href="${data.instagram}" target="_blank" style="margin-right: 8px;"><img src="${iconUrls.instagram}" alt="Instagram" style="${iconStyle}" width="24" height="24" border="0"></a>`);
+  if (data.facebook) icons.push(`<a href="${data.facebook}" target="_blank"><img src="${iconUrls.facebook}" alt="Website/Social" style="${iconStyle}" width="24" height="24" border="0"></a>`);
   
   return icons.join('');
 };
@@ -35,7 +43,7 @@ const generateCalendarButton = (data: FormData, colors: BrandColors): string => 
       <a href="${data.calendarUrl}" target="_blank" style="display: inline-block; background-color: ${colors.primary}; color: ${textColor}; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-decoration: none; padding: 8px 12px; border-radius: 5px;">
         <table cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td style="vertical-align: middle;"><img src="${staticIconUrls.calendar}" alt="calendar" width="16" height="16" style="display: block;" border="0"></td>
+            <td style="vertical-align: middle;"><img src="${iconUrls.calendar}" alt="calendar" width="16" height="16" style="display: block;" border="0"></td>
             <td style="padding-left: 8px; color: ${textColor}; vertical-align: middle;">${buttonText}</td>
           </tr>
         </table>
@@ -54,9 +62,9 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
           <p style="margin: 2px 0; color: ${colors.secondary};">${data.jobTitle} | ${data.company}</p>
           ${data.tagline ? `<p style="margin: 8px 0 10px 0; font-style: italic; color: ${colors.secondary}; font-size: 12px;">“${data.tagline}”</p>` : '<div style="height: 10px;"></div>'}
           <div style="border-top: 1px solid #eeeeee; padding-top: 8px;">
-            ${data.phone ? `<p style="margin: 4px 0;"><strong>T:</strong> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
-            ${data.email ? `<p style="margin: 4px 0;"><strong>E:</strong> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
-            ${data.website ? `<p style="margin: 4px 0;"><strong>W:</strong> <a href="${data.website}" target="_blank" style="color: ${colors.text}; text-decoration: none;">${data.website.replace(/https?:\/\//, '')}</a></p>` : ''}
+            ${data.phone ? `<p style="margin: 4px 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
+            ${data.email ? `<p style="margin: 4px 0;"><img src="${iconUrls.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
+            ${data.website ? `<p style="margin: 4px 0;"><img src="${iconUrls.website}" alt="Website" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="${data.website}" target="_blank" style="color: ${colors.text}; text-decoration: none;">${data.website.replace(/https?:\/\//, '')}</a></p>` : ''}
           </div>
           ${generateCalendarButton(data, colors)}
           <div style="margin-top: 12px;">${generateSocialIcons(data)}</div>
@@ -71,8 +79,9 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
           <p style="margin: 0; font-weight: bold; color: ${colors.primary}; font-size: 16px;">${data.fullName}</p>
           <p style="margin: 2px 0; color: ${colors.secondary};">${data.jobTitle}</p>
           <p style="margin: 2px 0 8px 0; color: ${colors.secondary}; font-weight: bold;">${data.company}</p>
-          <p style="margin: 4px 0;"><a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a>${data.phone ? ` | ${data.phone}` : ''}</p>
-          ${data.website ? `<p style="margin: 4px 0;"><a href="${data.website}" target="_blank" style="color: ${colors.primary}; text-decoration: none;">${data.website}</a></p>` : ''}
+          ${data.email ? `<p style="margin: 4px 0;"><img src="${iconUrls.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
+          ${data.phone ? `<p style="margin: 4px 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
+          ${data.website ? `<p style="margin: 4px 0;"><img src="${iconUrls.website}" alt="Website" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="${data.website}" target="_blank" style="color: ${colors.primary}; text-decoration: none;">${data.website}</a></p>` : ''}
           ${data.calendarUrl ? `<p style="margin: 6px 0 0 0;"><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">→ ${data.calendarText || 'Schedule a meeting'}</a></p>` : ''}
         </td>
       </tr>
@@ -103,8 +112,8 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
         </td>
         <td style="vertical-align: top; background-color: ${colors.background}; padding: 20px; border-radius: 0 8px 8px 0;">
           <p style="margin: 0 0 5px 0; font-weight: bold; color: ${colors.primary};">${data.company}</p>
-          <p style="margin: 4px 0;"><strong>E:</strong> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>
-          <p style="margin: 4px 0;"><strong>T:</strong> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>
+          ${data.email ? `<p style="margin: 4px 0;"><img src="${iconUrls.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
+          ${data.phone ? `<p style="margin: 4px 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
           ${data.address ? `<p style="margin: 4px 0;"><strong>A:</strong> ${data.address}</p>` : ''}
           ${data.calendarUrl ? `<div style="margin-top:10px;"><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">${data.calendarText || 'Schedule a meeting'}</a></div>` : ''}
           <div style="margin-top: 10px;">${generateSocialIcons(data)}</div>
@@ -121,9 +130,9 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
       </tr>
       <tr>
         <td colspan="3" style="font-size: 11px; color: ${colors.secondary};">
-          <a href="mailto:${data.email}" style="color: ${colors.secondary}; text-decoration: none;">${data.email}</a>
-          ${data.phone ? ` | ${data.phone}` : ''}
-          ${data.website ? ` | <a href="${data.website}" target="_blank" style="color: ${colors.primary}; text-decoration: none;">Website</a>` : ''}
+          ${data.email ? `<span><img src="${iconUrls.email}" alt="Email" width="12" height="12" style="vertical-align: middle; margin-right: 4px; border:0;" /><a href="mailto:${data.email}" style="color: ${colors.secondary}; text-decoration: none;">${data.email}</a></span>` : ''}
+          ${data.phone ? ` <span style="margin-left:8px;"><img src="${iconUrls.phone}" alt="Phone" width="12" height="12" style="vertical-align: middle; margin-right: 4px; border:0;" />${data.phone}</span>` : ''}
+          ${data.website ? ` <span style="margin-left:8px;"><img src="${iconUrls.website}" alt="Website" width="12" height="12" style="vertical-align: middle; margin-right: 4px; border:0;" /><a href="${data.website}" target="_blank" style="color: ${colors.primary}; text-decoration: none;">Website</a></span>` : ''}
         </td>
       </tr>
       ${data.calendarUrl ? `<tr><td colspan="3" style="padding-top: 5px;"><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">${data.calendarText || 'Schedule a meeting'}</a></td></tr>` : ''}
@@ -143,8 +152,8 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
           <table cellpadding="0" cellspacing="0" style="width: 100%;">
             <tr>
               <td style="vertical-align: top; width: 50%;">
-                ${data.email ? `<p style="margin: 0 0 5px 0;"><a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
-                ${data.phone ? `<p style="margin: 0;"><a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
+                ${data.email ? `<p style="margin: 0 0 5px 0;"><img src="${iconUrls.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /><a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
+                ${data.phone ? `<p style="margin: 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /><a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
                 ${data.calendarUrl ? `<p style="margin: 8px 0 0 0;"><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">${data.calendarText || 'Schedule a meeting'}</a></p>` : ''}
               </td>
               <td style="vertical-align: top; text-align: right;">

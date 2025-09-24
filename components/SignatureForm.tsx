@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
 import { FormData, BrandColors, TemplateId } from '../types';
 import { TemplateSelector } from './TemplateSelector';
+import { uploadAvatar } from '../storage/supabaseStorage';
+import { useAuth } from '../auth/AuthContext';
 
 interface SignatureFormProps {
   formData: FormData;
@@ -41,6 +43,7 @@ const ColorPicker: React.FC<{ label: string; value: string; onChange: (e: React.
 
 export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, colors, setColors, setImageData, selectedTemplates, setSelectedTemplates, imageData, onGenerate, onReset }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,11 +62,16 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         alert('Image size cannot exceed 2MB.');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageData(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (!user) {
+        alert('Please sign in before uploading an avatar.');
+        return;
+      }
+      uploadAvatar(file, user.id)
+        .then(({ url }) => setImageData(url))
+        .catch((err) => {
+          console.error('Supabase upload failed', err);
+          alert('No se pudo subir el avatar a Supabase Storage. Revisa tu configuración de bucket/políticas.');
+        });
     }
   };
 

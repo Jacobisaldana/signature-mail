@@ -1,0 +1,6 @@
+name = "signature-mail"
+compatibility_date = "2024-04-02"
+
+[vars]
+# These are examples; set real values in Cloudflare Pages project settings or .dev.vars.
+S3_REGION = "us-east-1"
