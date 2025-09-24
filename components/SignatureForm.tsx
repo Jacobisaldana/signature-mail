@@ -70,7 +70,7 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         .then(({ url }) => setImageData(url))
         .catch((err) => {
           console.error('Supabase upload failed', err);
-          alert('No se pudo subir el avatar a Supabase Storage. Revisa tu configuración de bucket/políticas.');
+          alert('Could not upload the avatar to Supabase Storage. Check your bucket configuration and policies.');
         });
     }
   };

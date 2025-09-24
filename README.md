@@ -23,18 +23,18 @@ Checks:
 - Build: `npm run build`
 
 ### Supabase Storage (icons & avatars)
-- Crea bucket público `icons` y sube: `linkedin.png`, `twitter.png`, `instagram.png`, `social.png`, `calendar.png`.
-- Crea bucket `avatars` (lectura pública) y permite a usuarios autenticados subir/actualizar su propio avatar.
+- Create a public bucket `icons` and upload: `email.png`, `phone.png`, `website.png`, `linkedin.png`, `twitter.png`, `instagram.png`, `social.png`, `calendar.png`.
+- Create an `avatars` bucket (public read) and allow authenticated users to upload/update only their own avatar paths.
 
 ## Supabase Policies (Storage)
-Asigna estas políticas a `avatars` (lectura pública y escritura del dueño):
+Assign these policies to `avatars` (public read and owner‑write):
 
-1) Lectura pública (RLS)
+1) Public read (RLS)
 ```
 (bucket_id = 'avatars')
 ```
 
-2) Usuarios autenticados pueden subir/actualizar su carpeta (`<user_id>/...`)
+2) Authenticated users can write only to their folder (`<user_id>/...`)
 ```
 (bucket_id = 'avatars' AND auth.role() = 'authenticated' AND (storage.foldername(name))[1] = auth.uid())
 ```
@@ -44,4 +44,4 @@ Asigna estas políticas a `avatars` (lectura pública y escritura del dueño):
   - `VITE_SUPABASE_URL=...`
   - `VITE_SUPABASE_ANON_KEY=...`
 - The app gates UI behind sign-in (email/password). Use the header button to sign out.
-- Avatars se suben con Supabase Storage a `avatars/<userId>/avatar.ext` y se usa la `publicUrl`.
+- Avatars are uploaded to Supabase Storage at `avatars/<userId>/avatar.ext` and use the public URL.

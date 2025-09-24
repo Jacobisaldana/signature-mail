@@ -17,7 +17,7 @@ export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature })
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
-      alert('No se pudo copiar el código.');
+      alert('Could not copy the code.');
     }
   };
 
@@ -121,16 +121,16 @@ export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature })
           <button
             onClick={handleCopyRich}
             className={`px-3 py-1 text-xs font-semibold rounded-md transition ${copied ? 'bg-green-500 text-white' : 'bg-amber-500 hover:bg-amber-600 text-black'}`}
-            title="Copiar como contenido enriquecido (HTML)"
+            title="Copy as rich content (HTML)"
           >
-            {copied ? '¡Copiado!' : 'Copiar Firma'}
+            {copied ? 'Copied!' : 'Copy Signature'}
           </button>
           <button
             onClick={handleCopyCode}
             className="px-3 py-1 text-xs font-semibold text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"
-            title="Copiar código HTML"
+            title="Copy HTML code"
           >
-            Copiar Código
+            Copy Code
           </button>
         </div>
       </div>

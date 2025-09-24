@@ -117,7 +117,7 @@ function App() {
         }
       } catch (err) {
         console.warn('Upload at generate time failed:', err);
-        alert('No se pudo subir la imagen al bucket. Ejecuta `npm run dev:cf` o despliega para habilitar Functions, y configura CORS en MinIO.');
+        alert('Could not upload the image to the bucket. Run `npm run dev:cf` or deploy to enable Functions, and ensure CORS is configured on MinIO.');
         return;
       }
     }
