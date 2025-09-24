@@ -2,9 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { SignatureForm } from './components/SignatureForm';
 import { SignaturePreview } from './components/SignaturePreview';
 import { FormData, BrandColors, TemplateId, Signature } from './types';
-import { generateSignatureHtml } from './services/signatureGenerator';
+import { generateSignatureHtml, setIconUrls } from './services/signatureGenerator';
 import { TEMPLATES } from './components/TemplateSelector';
 import { InstallationGuide } from './components/InstallationGuide';
+import { useAuth } from './auth/AuthContext';
+import { supabase } from './supabaseClient';
+import { Auth } from './components/Auth';
+import { getIconUrlsFromSupabase } from './storage/supabaseStorage';
 
 const initialFormData: FormData = {
   fullName: '', jobTitle: '', company: '', email: '', phone: '', website: '',
@@ -27,6 +31,7 @@ enum Tab {
 const LOGO_URL = "https://contractorcommander.com/wp-content/uploads/2025/09/icon128.png";
 
 function App() {
+  const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>(Tab.Form);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [colors, setColors] = useState<BrandColors>(initialColors);
@@ -46,6 +51,17 @@ function App() {
     }
   }, []);
 
+  // Configure icon URLs from Supabase public bucket; set per-icon when available
+  useEffect(() => {
+    const urls = getIconUrlsFromSupabase();
+    (Object.keys(urls) as (keyof typeof urls)[]).forEach((k) => {
+      const img = new Image();
+      img.onload = () => setIconUrls({ [k]: urls[k] });
+      img.onerror = () => {/* keep fallback for this icon */};
+      img.src = urls[k];
+    });
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('signatureFormData', JSON.stringify(formData));
   }, [formData]);
@@ -54,7 +70,7 @@ function App() {
     localStorage.setItem('signatureBrandColors', JSON.stringify(colors));
   }, [colors]);
 
-  const handleGenerate = useCallback(() => {
+  const handleGenerate = useCallback(async () => {
     if (!formData.fullName || !formData.jobTitle || !formData.company || !formData.email) {
       alert('Please complete the required fields (*).');
       return;
@@ -62,6 +78,48 @@ function App() {
     if(selectedTemplates.length === 0) {
       alert('Please select at least one signature template.');
       return;
+    }
+
+    // If the image is still a data URL, try to upload now to get a short public URL
+    if (imageData && imageData.startsWith('data:')) {
+      try {
+        // First try simple server-side upload
+        const up = await fetch('/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dataUrl: imageData, filename: 'avatar' }),
+        });
+        if (up.ok) {
+          const { url } = await up.json();
+          setImageData(url);
+        } else {
+          // Fallback to presigned upload
+          const m = /^data:([^;]+);base64,(.*)$/i.exec(imageData);
+          if (!m) throw new Error('Invalid data URL');
+          const contentType = m[1];
+          const base64 = m[2];
+          const binary = atob(base64);
+          const len = binary.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+          const blob = new Blob([bytes], { type: contentType });
+
+          const signed = await fetch('/sign-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contentType }),
+          });
+          if (!signed.ok) throw new Error('sign-upload failed');
+          const { uploadUrl, publicUrl } = await signed.json();
+          const putRes = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': contentType }, body: blob });
+          if (!putRes.ok) throw new Error('PUT upload failed');
+          setImageData(publicUrl);
+        }
+      } catch (err) {
+        console.warn('Upload at generate time failed:', err);
+        alert('No se pudo subir la imagen al bucket. Ejecuta `npm run dev:cf` o despliega para habilitar Functions, y configura CORS en MinIO.');
+        return;
+      }
     }
 
     const signatures: Signature[] = selectedTemplates.map(templateId => {
@@ -98,12 +156,24 @@ function App() {
     </button>
   );
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <header className="text-center mb-8 flex flex-col items-center">
             <img src={LOGO_URL} alt="Logo" className="h-20 w-20 mb-4" />
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">MAS Signature Free</h1>
+          <div className="mt-2">
+            <span className="text-sm text-gray-600 mr-3">{user?.email}</span>
+            <button onClick={() => supabase.auth.signOut()} className="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Sign out</button>
+          </div>
           <p className="mt-2 text-lg text-gray-600">Craft professional, custom email signatures in seconds.</p>
         </header>
 
