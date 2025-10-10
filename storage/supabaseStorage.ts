@@ -5,7 +5,7 @@ const ICONS_BUCKET = (import.meta.env.VITE_SUPABASE_ICONS_BUCKET as string) || '
 
 export async function uploadAvatar(file: File, userId: string, bucket: string = AVATARS_BUCKET) {
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const key = `${userId}/avatar.${ext}`;
+  const key = `${userId}/avatar_${Date.now()}.${ext}`;
   const { error } = await supabase.storage.from(bucket).upload(key, file, {
     upsert: true,
     contentType: file.type || 'image/jpeg',

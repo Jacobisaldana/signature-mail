@@ -92,7 +92,9 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
       const version = ++uploadVersionRef.current;
       // Usar Data URL para que el HTML embeba la imagen recortada
       const dataUrl = await blobToDataUrl(blob);
-      setImageData(dataUrl);
+      // Forzar refresco inmediato de preview y evitar que quede la anterior
+      setImageData(null);
+      requestAnimationFrame(() => setImageData(dataUrl));
 
       // Upload to Supabase if authenticated
       if (!user) {
