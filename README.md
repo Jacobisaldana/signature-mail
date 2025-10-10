@@ -23,7 +23,7 @@ Checks:
 - Build: `npm run build`
 
 ### Supabase Storage (icons & avatars)
-- Create a public bucket `icons` and upload: `email.png`, `phone.png`, `website.png`, `linkedin.png`, `twitter.png`, `instagram.png`, `social.png`, `calendar.png`.
+- Create a public bucket `icons` and upload: `email.png`, `phone.png`, `website.png`, `linkedin.png`, `twitter.png`, `instagram.png`, `facebook.png`, `calendar.png`.
 - Create an `avatars` bucket (public read) and allow authenticated users to upload/update only their own avatar paths.
 
 ## Supabase Policies (Storage)

@@ -1,8 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { FormData, BrandColors, TemplateId } from '../types';
 import { TemplateSelector } from './TemplateSelector';
 import { uploadAvatar } from '../storage/supabaseStorage';
 import { useAuth } from '../auth/AuthContext';
+import ImageCropper from './ImageCropper';
 
 interface SignatureFormProps {
   formData: FormData;
@@ -44,6 +45,8 @@ const ColorPicker: React.FC<{ label: string; value: string; onChange: (e: React.
 export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, colors, setColors, setImageData, selectedTemplates, setSelectedTemplates, imageData, onGenerate, onReset }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [isCropping, setIsCropping] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,16 +65,45 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         alert('Image size cannot exceed 2MB.');
         return;
       }
+      // Open cropper first; upload after user confirms
+      setCropFile(file);
+      setIsCropping(true);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setIsCropping(false);
+    setCropFile(null);
+  };
+
+  const blobToDataUrl = (b: Blob) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(b);
+  });
+
+  const handleCropConfirm = async (blob: Blob) => {
+    try {
+      // Usar Data URL para que el HTML embeba la imagen recortada
+      const dataUrl = await blobToDataUrl(blob);
+      setImageData(dataUrl);
+
+      // Upload to Supabase if authenticated
       if (!user) {
-        alert('Please sign in before uploading an avatar.');
-        return;
+        alert('Sign in to upload the avatar to Supabase. A local preview is ready.');
+      } else {
+        const ext = 'jpg';
+        const file = new File([blob], `avatar.${ext}`, { type: 'image/jpeg' });
+        const { url } = await uploadAvatar(file, user.id);
+        setImageData(url);
       }
-      uploadAvatar(file, user.id)
-        .then(({ url }) => setImageData(url))
-        .catch((err) => {
-          console.error('Supabase upload failed', err);
-          alert('Could not upload the avatar to Supabase Storage. Check your bucket configuration and policies.');
-        });
+    } catch (err) {
+      console.error('Crop/Upload failed', err);
+      alert('No se pudo procesar la imagen.');
+    } finally {
+      setIsCropping(false);
+      setCropFile(null);
     }
   };
 
@@ -82,20 +114,21 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
   };
 
   return (
+    <>
     <div className="space-y-8 p-4 md:p-6">
         {/* Image Upload */}
         <div className="p-6 border border-gray-200 rounded-lg bg-white">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Image or Logo</h3>
             <div className="flex items-center space-x-6">
                 <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border">
-                    {imageData ? <img src={imageData} alt="Preview" className="w-full h-full object-cover" /> : <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
+                    {imageData ? <img src={imageData} alt="Preview" className="w-full h-full" style={{ objectFit: 'cover' as const }} /> : <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
                 </div>
                 <div className="flex-grow">
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-amber-50 text-amber-700 font-semibold rounded-md hover:bg-amber-100 transition">
                         Upload Image
                     </button>
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/png, image/jpeg, image/gif" className="hidden" />
-                    <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF (Max 2MB). Recommended: 200x200px.</p>
+                    <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF (Max 2MB). Recommended: 200×200px. You can crop and adjust before uploading.</p>
                 </div>
             </div>
         </div>
@@ -167,5 +200,15 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
             </button>
         </div>
     </div>
+    <SignatureFormCropPortal open={isCropping} file={cropFile} onCancel={handleCropCancel} onConfirm={handleCropConfirm} />
+    </>
+  );
+};
+
+// Modal de recorte
+export const SignatureFormCropPortal: React.FC<{ open: boolean; file: File | null; onCancel: () => void; onConfirm: (blob: Blob) => void; }> = ({ open, file, onCancel, onConfirm }) => {
+  if (!open || !file) return null;
+  return (
+    <ImageCropper key={`${file.name}-${file.size}-${file.lastModified}`} file={file} onCancel={onCancel} onConfirm={onConfirm} />
   );
 };

@@ -20,7 +20,7 @@ export async function onRequest(context) {
       linkedin: `${base}/linkedin.png`,
       twitter: `${base}/twitter.png`,
       instagram: `${base}/instagram.png`,
-      facebook: `${base}/social.png`,
+      facebook: `${base}/facebook.png`,
       calendar: `${base}/calendar.png`,
     };
     return new Response(JSON.stringify(urls), {
@@ -55,7 +55,7 @@ export async function onRequest(context) {
     linkedin: "linkedin.png",
     twitter: "twitter.png",
     instagram: "instagram.png",
-    facebook: "social.png",
+    facebook: "facebook.png",
   };
 
   try {

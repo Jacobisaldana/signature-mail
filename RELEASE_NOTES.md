@@ -13,7 +13,7 @@ Highlights
 Quick Setup
 - Environment in `.env` or `.env.local` (Vite): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_AVATARS_BUCKET`, `VITE_SUPABASE_ICONS_BUCKET`.
 - Supabase buckets:
-  - `icons` (public): `email.png`, `phone.png`, `website.png`, `linkedin.png`, `twitter.png`, `instagram.png`, `social.png`, `calendar.png`.
+  - `icons` (public): `email.png`, `phone.png`, `website.png`, `linkedin.png`, `twitter.png`, `instagram.png`, `facebook.png`, `calendar.png`.
   - `avatars`: public read and RLS for `<userId>/...`.
 - Development: `npm install && npm run dev`.
 

@@ -11,7 +11,7 @@ let iconUrls = {
   linkedin: "https://contractorcommander.com/wp-content/uploads/2025/09/linkedin.png",
   twitter: "https://contractorcommander.com/wp-content/uploads/2025/09/twitter.png",
   instagram: "https://contractorcommander.com/wp-content/uploads/2025/09/instagram.png",
-  facebook: "https://contractorcommander.com/wp-content/uploads/2025/09/social.png",
+  facebook: "https://contractorcommander.com/wp-content/uploads/2025/09/facebook.png",
   calendar: "https://contractorcommander.com/wp-content/uploads/2025/09/calendar.png",
   phone: "https://contractorcommander.com/wp-content/uploads/2025/09/phone.png",
   email: "https://contractorcommander.com/wp-content/uploads/2025/09/email.png",
@@ -23,15 +23,32 @@ export const setIconUrls = (urls: Partial<typeof iconUrls>) => {
 };
 
 const generateSocialIcons = (data: FormData): string => {
-  const icons: string[] = [];
-  const iconStyle = `width: 24px; height: 24px; border: 0;`;
-  
-  if (data.linkedin) icons.push(`<a href="${data.linkedin}" target="_blank" style="margin-right: 8px;"><img src="${iconUrls.linkedin}" alt="LinkedIn" style="${iconStyle}" width="24" height="24" border="0"></a>`);
-  if (data.twitter) icons.push(`<a href="${data.twitter}" target="_blank" style="margin-right: 8px;"><img src="${iconUrls.twitter}" alt="X (Twitter)" style="${iconStyle}" width="24" height="24" border="0"></a>`);
-  if (data.instagram) icons.push(`<a href="${data.instagram}" target="_blank" style="margin-right: 8px;"><img src="${iconUrls.instagram}" alt="Instagram" style="${iconStyle}" width="24" height="24" border="0"></a>`);
-  if (data.facebook) icons.push(`<a href="${data.facebook}" target="_blank"><img src="${iconUrls.facebook}" alt="Website/Social" style="${iconStyle}" width="24" height="24" border="0"></a>`);
-  
-  return icons.join('');
+  const cells: string[] = [];
+  const iconStyle = `display:block; width: 24px; height: 24px; border: 0;`;
+
+  const push = (href: string, src: string, alt: string) => {
+    cells.push(`
+      <td valign="middle" width="28" style="padding-right: 8px;">
+        <a href="${href}" target="_blank" style="text-decoration:none; display:inline-block;">
+          <img src="${src}" alt="${alt}" style="${iconStyle}" width="24" height="24" border="0" />
+        </a>
+      </td>
+    `);
+  };
+
+  if (data.linkedin) push(data.linkedin, iconUrls.linkedin, 'LinkedIn');
+  if (data.twitter) push(data.twitter, iconUrls.twitter, 'X (Twitter)');
+  if (data.instagram) push(data.instagram, iconUrls.instagram, 'Instagram');
+  if (data.facebook) push(data.facebook, iconUrls.facebook, 'Facebook');
+
+  if (!cells.length) return '';
+  return `
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="table-layout: fixed;">
+      <tr>
+        ${cells.join('')}
+      </tr>
+    </table>
+  `;
 };
 
 const generateCalendarButton = (data: FormData, colors: BrandColors): string => {
@@ -56,7 +73,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
   [TemplateId.Modern]: ({ data, colors, imageData }) => `
     <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Arial, sans-serif; font-size: 14px; color: ${colors.text}; background-color: ${colors.background}; border-left: 5px solid ${colors.primary}; table-layout: fixed;">
       <tr>
-        ${imageData ? `<td valign="top" width="110" style="padding:16px 20px 16px 20px;"><img src="${imageData}" alt="${data.fullName}" width="90" height="90" style="display:block; border-radius: 50%; border: 2px solid ${colors.primary};"></td>` : ''}
+        ${imageData ? `<td valign=\"top\" width=\"110\" style=\"padding:16px 20px 16px 20px;\"><img src=\"${imageData}\" alt=\"${data.fullName}\" width=\"90\" height=\"90\" style=\"display:block; border:0; border-radius: 50%; border: 2px solid ${colors.primary};\"></td>` : ''}
         <td valign="top" style="padding:16px 20px 16px 20px;">
           <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: ${colors.primary};">${data.fullName}</h3>
           <p style="margin: 2px 0; color: ${colors.secondary};">${data.jobTitle} | ${data.company}</p>
@@ -77,7 +94,8 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
   [TemplateId.Minimalist]: ({ data, colors, imageData }) => `
     <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: ${colors.text}; line-height: 1.5; table-layout: fixed;">
       <tr>
-        <td style="border-left: 2px solid ${colors.primary}; padding-left: 15px;">
+        ${imageData ? `<td valign="top" width="80" style="padding-right: 12px;"><img src="${imageData}" alt="${data.fullName}" width="60" height="60" style="display:block; border: 2px solid ${colors.primary}; border-radius: 50%;" /></td>` : ''}
+        <td valign="top" style="border-left: 2px solid ${colors.primary}; padding-left: 15px;">
           <p style="margin: 0; font-weight: bold; color: ${colors.primary}; font-size: 16px;">${data.fullName}</p>
           <p style="margin: 2px 0; color: ${colors.secondary};">${data.jobTitle}</p>
           <p style="margin: 2px 0 8px 0; color: ${colors.secondary}; font-weight: bold;">${data.company}</p>
@@ -92,7 +110,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
   [TemplateId.Classic]: ({ data, colors, imageData }) => `
     <table cellpadding="0" cellspacing="0" style="font-family: 'Times New Roman', Times, serif; font-size: 14px; color: ${colors.text};">
       <tr>
-        ${imageData ? `<td style="padding-right: 15px;"><img src="${imageData}" alt="${data.fullName}" style="width: 70px; height: 70px; object-fit: cover;"></td>` : ''}
+        ${imageData ? `<td style=\"padding-right: 15px;\"><img src=\"${imageData}\" alt=\"${data.fullName}\" width=\"70\" height=\"70\" style=\"display:block; border: 2px solid ${colors.primary}; border-radius: 50%;\"></td>` : ''}
         <td style="border-left: 1px solid #cccccc; padding-left: 15px; vertical-align: top;">
           <p style="margin: 0; font-weight: bold; font-size: 16px; color: #000000;">${data.fullName}</p>
           <p style="margin: 2px 0; font-style: italic; color: ${colors.secondary};">${data.jobTitle}</p>
@@ -108,7 +126,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
     <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Calibri, sans-serif; font-size: 14px; color: ${colors.text}; table-layout: fixed;">
       <tr>
         <td valign="top" width="140" style="background-color: ${colors.primary}; padding: 20px; border-radius: 8px 0 0 8px; text-align: center;">
-          ${imageData ? `<img src="${imageData}" alt="${data.fullName}" width="80" height="80" style="display:block; border-radius: 50%; margin-bottom: 10px;">` : ''}
+          ${imageData ? `<span style=\"display:inline-block; border: 2px solid ${colors.primary}; border-radius: 50%; padding: 2px; background-color: #ffffff; margin-bottom: 10px;\"><img src=\"${imageData}\" alt=\"${data.fullName}\" width=\"72\" height=\"72\" style=\"display:block; border:0; border-radius: 50%;\"></span>` : ''}
           <h3 style="margin: 0; font-size: 16px; font-weight: bold; color: white;">${data.fullName}</h3>
           <p style="margin: 2px 0; color: white; font-size: 12px;">${data.jobTitle}</p>
         </td>
@@ -143,7 +161,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
   [TemplateId.SocialFocus]: ({ data, colors, imageData }) => `
     <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: 'Verdana', sans-serif; color: ${colors.text}; font-size: 14px; width: 450px; table-layout: fixed;">
       <tr>
-        ${imageData ? `<td valign="top" width="80" style="padding-right: 15px;"><img src="${imageData}" alt="${data.fullName}" width="60" height="60" style="display:block; border-radius: 8px;"></td>` : ''}
+        ${imageData ? `<td valign=\"top\" width=\"80\" style=\"padding-right: 15px;\"><img src=\"${imageData}\" alt=\"${data.fullName}\" width=\"60\" height=\"60\" style=\"display:block; border: 2px solid ${colors.primary}; border-radius: 50%;\"></td>` : ''}
         <td valign="top">
           <p style="margin: 0; font-weight: bold; color: ${colors.primary}; font-size: 18px;">${data.fullName}</p>
           <p style="margin: 2px 0 8px 0; color: ${colors.secondary};">${data.jobTitle} at ${data.company}</p>

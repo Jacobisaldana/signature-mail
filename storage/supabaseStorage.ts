@@ -21,7 +21,7 @@ export function getIconUrlsFromSupabase(bucket: string = ICONS_BUCKET) {
     linkedin: make('linkedin.png'),
     twitter: make('twitter.png'),
     instagram: make('instagram.png'),
-    facebook: make('social.png'),
+    facebook: make('facebook.png'),
     calendar: make('calendar.png'),
     phone: make('phone.png'),
     email: make('email.png'),
