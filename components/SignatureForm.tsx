@@ -47,6 +47,7 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
   const { user } = useAuth();
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [isCropping, setIsCropping] = useState(false);
+  const uploadVersionRef = useRef(0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,9 +67,12 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         return;
       }
       // Open cropper first; upload after user confirms
+      uploadVersionRef.current += 1; // invalidate any pending uploads
       setCropFile(file);
       setIsCropping(true);
     }
+    // Clear input so the same file can be selected again
+    if (e.target) e.target.value = '';
   };
 
   const handleCropCancel = () => {
@@ -85,6 +89,7 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
 
   const handleCropConfirm = async (blob: Blob) => {
     try {
+      const version = ++uploadVersionRef.current;
       // Usar Data URL para que el HTML embeba la imagen recortada
       const dataUrl = await blobToDataUrl(blob);
       setImageData(dataUrl);
@@ -96,7 +101,10 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         const ext = 'jpg';
         const file = new File([blob], `avatar.${ext}`, { type: 'image/jpeg' });
         const { url } = await uploadAvatar(file, user.id);
-        setImageData(url);
+        const versioned = `${url}?v=${Date.now()}`;
+        if (version === uploadVersionRef.current) {
+          setImageData(versioned);
+        }
       }
     } catch (err) {
       console.error('Crop/Upload failed', err);
