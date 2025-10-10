@@ -1,5 +1,23 @@
 # Release Notes
 
+## Version: Cropper + Avatar/Icons Improvements (2025-10-10)
+
+Highlights
+- Image cropper: proportional zoom, drag, circular viewport, high‑quality canvas export.
+- No image distortion: avatars use equal width/height and inline styles email‑safe.
+- Social icons in a single row (table‑based) across templates.
+- Unified circular avatars with 2px brand border; Vertical template uses a double‑ring for contrast.
+- Facebook icon renamed to `facebook.png` (no longer `social.png`).
+- Supabase helper: `window.checkSupabase()` to quickly diagnose auth and Storage reachability.
+
+Fixes
+- Stale preview after crop: versioned uploads, immediate preview refresh, and unique storage keys to avoid CDN cache collisions.
+- Clear file input on select to allow reselection of the same file reliably.
+
+Upgrade Notes
+- Ensure `icons` bucket contains `facebook.png`.
+- Optional: set `VITE_SUPABASE_ICONS_BUCKET`/`VITE_SUPABASE_AVATARS_BUCKET` if using non‑default names.
+
 ## Version: Email Auth + Email‑Safe Signatures (2025-09-24)
 
 Highlights
