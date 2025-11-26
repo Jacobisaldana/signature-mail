@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # These will be passed from environment variables or Dokploy secrets
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_SUPABASE_AVATARS_BUCKET: ${VITE_SUPABASE_AVATARS_BUCKET:-avatars}
+        VITE_SUPABASE_ICONS_BUCKET: ${VITE_SUPABASE_ICONS_BUCKET:-icons}
+
+    image: signature-mail:latest
+
+    container_name: signature-mail-app
+
+    ports:
+      - "3000:80"
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.signature-mail.rule=Host(`your-domain.com`)"
+      - "traefik.http.routers.signature-mail.entrypoints=websecure"
+      - "traefik.http.routers.signature-mail.tls.certresolver=letsencrypt"
+      - "traefik.http.services.signature-mail.loadbalancer.server.port=80"
+
+    environment:
+      - NODE_ENV=production
+
+    networks:
+      - signature-mail-network
+
+networks:
+  signature-mail-network:
+    driver: bridge
