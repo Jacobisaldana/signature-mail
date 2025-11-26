@@ -4,6 +4,7 @@ import { TemplateSelector } from './TemplateSelector';
 import { uploadAvatar } from '../storage/supabaseStorage';
 import { useAuth } from '../auth/AuthContext';
 import ImageCropper from './ImageCropper';
+import { validateImageForEmail, optimizeImageForEmail } from '../utils/imageOptimizer';
 
 interface SignatureFormProps {
   formData: FormData;
@@ -59,13 +60,23 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
     setColors(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Image size cannot exceed 2MB.');
+      // Validate image
+      const validation = await validateImageForEmail(file);
+
+      if (!validation.valid) {
+        alert(`Invalid image:\n${validation.errors.join('\n')}`);
+        if (e.target) e.target.value = '';
         return;
       }
+
+      // Show warnings if any
+      if (validation.warnings.length > 0) {
+        console.log('Image warnings:', validation.warnings.join('\n'));
+      }
+
       // Open cropper first; upload after user confirms
       uploadVersionRef.current += 1; // invalidate any pending uploads
       setCropFile(file);
@@ -90,27 +101,43 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
   const handleCropConfirm = async (blob: Blob) => {
     try {
       const version = ++uploadVersionRef.current;
-      // Usar Data URL para que el HTML embeba la imagen recortada
-      const dataUrl = await blobToDataUrl(blob);
-      // Forzar refresco inmediato de preview y evitar que quede la anterior
-      setImageData(null);
-      requestAnimationFrame(() => setImageData(dataUrl));
 
-      // Upload to Supabase if authenticated
+      // CRITICAL: Always upload to get a public URL, never use data URLs in signatures
       if (!user) {
-        alert('Sign in to upload the avatar to Supabase. A local preview is ready.');
-      } else {
-        const ext = 'jpg';
-        const file = new File([blob], `avatar.${ext}`, { type: 'image/jpeg' });
-        const { url } = await uploadAvatar(file, user.id);
-        const versioned = `${url}?v=${Date.now()}`;
-        if (version === uploadVersionRef.current) {
-          setImageData(versioned);
-        }
+        alert('Please sign in to upload your avatar. Email signatures require publicly hosted images.');
+        setIsCropping(false);
+        setCropFile(null);
+        return;
+      }
+
+      // Optimize image for email (resize, compress)
+      const optimizedBlob = await optimizeImageForEmail(blob, {
+        maxWidth: 200,
+        maxHeight: 200,
+        quality: 0.85,
+        outputFormat: 'image/jpeg',
+      });
+
+      console.log(`Image optimized: ${blob.size} bytes → ${optimizedBlob.size} bytes`);
+
+      // Show temporary placeholder while uploading
+      setImageData('uploading');
+
+      // Upload optimized image to Supabase
+      const file = new File([optimizedBlob], `avatar.jpg`, { type: 'image/jpeg' });
+      const { url } = await uploadAvatar(file, user.id);
+
+      // Add cache-busting parameter to force reload
+      const versioned = `${url}?v=${Date.now()}`;
+
+      // Only update if this is still the latest upload
+      if (version === uploadVersionRef.current) {
+        setImageData(versioned);
       }
     } catch (err) {
       console.error('Crop/Upload failed', err);
-      alert('No se pudo procesar la imagen.');
+      alert('Could not process and upload the image. Please try again or use a different image.');
+      setImageData(null);
     } finally {
       setIsCropping(false);
       setCropFile(null);

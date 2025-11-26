@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { FormData, BrandColors, TemplateId } from '../types';
 import { generateSignatureHtml } from '../services/signatureGenerator';
 import { TEMPLATES } from './TemplateSelector';
+import { SignatureCompatibilityChecker } from './SignatureCompatibilityChecker';
 
 interface LivePreviewProps {
   formData: FormData;
@@ -191,6 +192,9 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
                 style={{ minWidth: '400px' }}
               />
             </div>
+
+            {/* Compatibility checker */}
+            <SignatureCompatibilityChecker signatureHtml={signatureHtml} imageUrl={imageData} />
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">

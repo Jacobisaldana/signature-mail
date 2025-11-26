@@ -21,31 +21,62 @@ const GuideTab: React.FC<{
 );
 
 const instructions = {
-  gmail: [
-    'Copy the desired signature HTML using the "Copy" button.',
-    'In Gmail, go to Settings > See all settings.',
-    'Under the "General" tab, scroll down to the "Signature" section.',
-    'Click "Create new", give your signature a name, and paste the copied HTML into the editor box.',
-    'Configure your signature defaults for new emails and replies.',
-    'Scroll to the bottom and click "Save Changes".',
-  ],
-  outlook: [
-    'Copy the desired signature HTML using the "Copy" button.',
-    'In the Outlook desktop app, go to File > Options > Mail > Signatures.',
-    'Click "New", provide a name, and click OK.',
-    'In the editor, paste your signature. Note: For best results, sometimes it is better to open the HTML in a web browser, select all (Ctrl+A), copy the visual content, and then paste that into the Outlook editor.',
-    'Set your default signature for new messages and replies/forwards.',
-    'Click "OK" to save.',
-  ],
-  apple: [
-    'Copy the desired signature HTML using the "Copy" button.',
-    'In Apple Mail, open Mail > Preferences (or Settings).',
-    'Go to the "Signatures" tab.',
-    'Select the email account you want to associate the signature with and click the "+" button.',
-    'Give your signature a name. IMPORTANT: Uncheck the "Always match my default message font" option.',
-    'Paste the signature into the signature editor box on the right.',
-    'Close the preferences window to save. The signature may not look correct in the preview, but it will render correctly in actual emails.',
-  ],
+  gmail: {
+    steps: [
+      'Click "Copy Signature" button above (the yellow button, NOT "Copy Code")',
+      'In Gmail, click the gear icon ⚙️ → "See all settings"',
+      'Under "General" tab, scroll to "Signature" section',
+      'Click "+ Create new", give it a name (e.g., "Work Signature")',
+      'Click in the signature editor and press Ctrl+V (Cmd+V on Mac) to paste',
+      'Scroll down and click "Save Changes" at the bottom',
+      'Send yourself a test email to verify it looks correct',
+    ],
+    tips: [
+      '✓ Use "Copy Signature" (not "Copy Code") for best results',
+      '✓ Gmail may block images from unknown sources - your avatar should be fine since it\'s on a trusted domain',
+      '⚠️ If images don\'t show, check your Gmail settings: Settings → General → Images → "Always display external images"',
+      '⚠️ Signature size limit is ~10KB - our signatures are optimized to stay under this',
+    ],
+  },
+  outlook: {
+    steps: [
+      'Click "Copy Signature" button above',
+      'Outlook Desktop: File → Options → Mail → Signatures',
+      'Outlook Web: Settings ⚙️ → View all Outlook settings → Compose and reply',
+      'Click "New signature" (+), give it a name',
+      'Click in the editor and press Ctrl+V (Cmd+V on Mac) to paste',
+      'For Outlook Desktop: If formatting looks off, open the HTML in a browser first, then copy from browser and paste',
+      'Set as default for new messages and/or replies',
+      'Click "Save" or "OK"',
+    ],
+    tips: [
+      '✓ Outlook uses Word\'s rendering engine - our signatures are optimized for this',
+      '⚠️ Outlook 2010-2016 has limited HTML support - avoid using very complex signatures',
+      '⚠️ If images don\'t show in Desktop: File → Options → Trust Center → Automatic Download → "Don\'t download pictures automatically"',
+      '💡 Outlook Web has better HTML support than Desktop versions',
+      '💡 If border-radius (rounded images) doesn\'t work in old Outlook, images will show as squares - this is normal',
+    ],
+  },
+  apple: {
+    steps: [
+      'Click "Copy Signature" button above',
+      'In Apple Mail: Mail → Settings (or Preferences on older macOS)',
+      'Click "Signatures" tab',
+      'Select your email account in the left column',
+      'Click the "+" button to create new signature',
+      '⚠️ CRITICAL: Uncheck "Always match my default message font" (this preserves your formatting)',
+      'Give it a name, then paste in the editor on the right (Cmd+V)',
+      'Close settings - changes save automatically',
+      'Send a test email to verify formatting',
+    ],
+    tips: [
+      '✓ The preview in Signatures preferences may look wrong - this is normal!',
+      '✓ The signature will render correctly in actual emails',
+      '⚠️ If you don\'t uncheck "Always match my default message font", your formatting will be lost',
+      '💡 You can drag signatures to reorder them',
+      '💡 To set a signature as default: Select account → Choose signature from dropdown',
+    ],
+  },
 };
 
 export const InstallationGuide: React.FC = () => {
@@ -61,11 +92,22 @@ export const InstallationGuide: React.FC = () => {
           <GuideTab client="apple" activeClient={activeClient} onClick={setActiveClient}>Apple Mail</GuideTab>
         </div>
         <div className="p-6">
-          <ol className="list-decimal list-inside space-y-3 text-gray-700">
-            {instructions[activeClient].map((step, index) => (
-              <li key={index}>{step}</li>
+          <h3 className="font-semibold text-gray-800 mb-3">Installation Steps</h3>
+          <ol className="list-decimal list-inside space-y-2 text-gray-700 mb-6">
+            {instructions[activeClient].steps.map((step, index) => (
+              <li key={index} className="text-sm leading-relaxed">{step}</li>
             ))}
           </ol>
+
+          <h3 className="font-semibold text-gray-800 mb-3 mt-6">Tips & Troubleshooting</h3>
+          <ul className="space-y-2">
+            {instructions[activeClient].tips.map((tip, index) => (
+              <li key={index} className="text-xs text-gray-600 leading-relaxed flex items-start">
+                <span className="mr-2">•</span>
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
