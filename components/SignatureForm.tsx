@@ -195,16 +195,16 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-center space-x-4 sticky bottom-0 py-4 bg-gray-100/80 backdrop-blur-sm">
-            <button
-                onClick={onGenerate}
-                className="px-8 py-3 bg-amber-500 text-black font-bold rounded-lg shadow-lg hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-transform transform hover:scale-105"
-            >
-                Generate Signatures
-            </button>
+        <div className="flex flex-col items-center justify-center space-y-3 sticky bottom-0 py-4 bg-gradient-to-t from-white via-white to-transparent">
+            <div className="text-center">
+                <p className="text-sm text-gray-600 mb-2">
+                    <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+                    Preview updates in real-time on the right →
+                </p>
+            </div>
             <button
                 onClick={onReset}
-                className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition"
+                className="px-6 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition shadow-sm"
             >
                 Reset Form
             </button>
