@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { useAuth } from '../auth/AuthContext';
 
 export const Auth: React.FC = () => {
+  const { initError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -54,6 +56,7 @@ export const Auth: React.FC = () => {
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           {message && <p className="text-sm text-green-600">{message}</p>}
+          {initError && <p className="text-sm text-amber-600">Aviso: no pudimos verificar tu sesión automáticamente. Puedes intentar iniciar sesión de todas formas.</p>}
           <button type="submit" disabled={loading} className="w-full py-2 bg-amber-500 text-black font-semibold rounded hover:bg-amber-600 disabled:opacity-50">
             {loading ? 'Loading…' : mode === 'signin' ? 'Sign in' : 'Sign up'}
           </button>

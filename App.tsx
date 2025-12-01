@@ -28,7 +28,7 @@ function App() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [colors, setColors] = useState<BrandColors>(initialColors);
   const [imageData, setImageData] = useState<string | null>(null);
-  const [selectedTemplates, setSelectedTemplates] = useState<TemplateId[]>([TemplateId.Modern, TemplateId.Minimalist]);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(TemplateId.Modern);
 
   useEffect(() => {
     try {
@@ -43,13 +43,25 @@ function App() {
 
   // Configure icon URLs from Supabase public bucket; set per-icon when available
   useEffect(() => {
-    const urls = getIconUrlsFromSupabase();
-    (Object.keys(urls) as (keyof typeof urls)[]).forEach((k) => {
+    const preferredBucket = (import.meta.env.VITE_SUPABASE_ICONS_BUCKET as string) || 'icons';
+    const fallbackBucket = preferredBucket === 'icons' ? 'icon' : 'icons';
+    const buckets = Array.from(new Set([preferredBucket, fallbackBucket]));
+
+    const preloadIcon = (iconName: keyof ReturnType<typeof getIconUrlsFromSupabase>, bucketIndex = 0) => {
+      const bucket = buckets[bucketIndex];
+      const urls = getIconUrlsFromSupabase(bucket);
+      const url = urls[iconName];
       const img = new Image();
-      img.onload = () => setIconUrls({ [k]: urls[k] });
-      img.onerror = () => {/* keep fallback for this icon */};
-      img.src = urls[k];
-    });
+      img.onload = () => setIconUrls({ [iconName]: url });
+      img.onerror = () => {
+        const next = bucketIndex + 1;
+        if (next < buckets.length) preloadIcon(iconName, next);
+      };
+      img.src = url;
+    };
+
+    const firstBucketUrls = getIconUrlsFromSupabase(buckets[0]);
+    (Object.keys(firstBucketUrls) as (keyof typeof firstBucketUrls)[]).forEach((iconName) => preloadIcon(iconName));
   }, []);
 
   useEffect(() => {
@@ -65,7 +77,7 @@ function App() {
         setFormData(initialFormData);
         setColors(initialColors);
         setImageData(null);
-        setSelectedTemplates([TemplateId.Modern, TemplateId.Minimalist]);
+        setSelectedTemplate(TemplateId.Modern);
     }
   };
 
@@ -120,8 +132,6 @@ function App() {
                 setColors={setColors}
                 imageData={imageData}
                 setImageData={setImageData}
-                selectedTemplates={selectedTemplates}
-                setSelectedTemplates={setSelectedTemplates}
                 onGenerate={() => {}} // No longer needed - preview is live
                 onReset={handleReset}
               />
@@ -134,7 +144,8 @@ function App() {
               formData={formData}
               colors={colors}
               imageData={imageData}
-              selectedTemplates={selectedTemplates}
+              selectedTemplate={selectedTemplate}
+              onTemplateChange={setSelectedTemplate}
             />
           </div>
         </div>

@@ -56,16 +56,20 @@ const generateCalendarButton = (data: FormData, colors: BrandColors): string => 
   const buttonText = data.calendarText || 'Schedule a meeting';
   const textColor = '#ffffff'; // Assuming white text looks best on a primary color background
   return `
-    <div style="padding-top: 12px;">
-      <a href="${data.calendarUrl}" target="_blank" style="display: inline-block; background-color: ${colors.primary}; color: ${textColor}; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-decoration: none; padding: 8px 12px; border-radius: 5px;">
-        <table cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td style="vertical-align: middle;"><img src="${iconUrls.calendar}" alt="calendar" width="16" height="16" style="display: block;" border="0"></td>
-            <td style="padding-left: 8px; color: ${textColor}; vertical-align: middle;">${buttonText}</td>
-          </tr>
-        </table>
-      </a>
-    </div>
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="padding-top: 12px;">
+      <tr>
+        <td>
+          <a href="${data.calendarUrl}" target="_blank" style="display: inline-block; background-color: ${colors.primary}; color: ${textColor}; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-decoration: none; padding: 8px 12px; border-radius: 5px;">
+            <table cellpadding="0" cellspacing="0" border="0" role="presentation">
+              <tr>
+                <td style="vertical-align: middle;"><img src="${iconUrls.calendar}" alt="calendar" width="16" height="16" style="display: block;" border="0"></td>
+                <td style="padding-left: 8px; color: ${textColor}; vertical-align: middle;">${buttonText}</td>
+              </tr>
+            </table>
+          </a>
+        </td>
+      </tr>
+    </table>
   `;
 };
 
@@ -77,7 +81,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
         <td valign="top" style="padding:16px 20px 16px 20px;">
           <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: ${colors.primary};">${data.fullName}</h3>
           <p style="margin: 2px 0; color: ${colors.secondary};">${data.jobTitle} | ${data.company}</p>
-          ${data.tagline ? `<p style="margin: 8px 0 10px 0; font-style: italic; color: ${colors.secondary}; font-size: 12px;">“${data.tagline}”</p>` : '<div style="height: 10px;"></div>'}
+          ${data.tagline ? `<p style="margin: 8px 0 10px 0; font-style: italic; color: ${colors.secondary}; font-size: 12px;">“${data.tagline}”</p>` : '<span style="display:block; height: 10px;"></span>'}
           <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-top: 1px solid #eeeeee; padding-top: 8px;">
             <tr><td>
             ${data.phone ? `<p style="margin: 4px 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
@@ -86,7 +90,7 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
             </td></tr>
           </table>
           ${generateCalendarButton(data, colors)}
-          <div style="margin-top: 12px;">${generateSocialIcons(data)}</div>
+          <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top: 12px;"><tr><td>${generateSocialIcons(data)}</td></tr></table>
         </td>
       </tr>
     </table>
@@ -135,8 +139,8 @@ const generators: Record<TemplateId, (params: GeneratorParams) => string> = {
           ${data.email ? `<p style="margin: 4px 0;"><img src="${iconUrls.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
           ${data.phone ? `<p style="margin: 4px 0;"><img src="${iconUrls.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
           ${data.address ? `<p style="margin: 4px 0;"><strong>A:</strong> ${data.address}</p>` : ''}
-          ${data.calendarUrl ? `<div style="margin-top:10px;"><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">${data.calendarText || 'Schedule a meeting'}</a></div>` : ''}
-          <div style="margin-top: 10px;">${generateSocialIcons(data)}</div>
+          ${data.calendarUrl ? `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top:10px;"><tr><td><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">${data.calendarText || 'Schedule a meeting'}</a></td></tr></table>` : ''}
+          <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top: 10px;"><tr><td>${generateSocialIcons(data)}</td></tr></table>
         </td>
       </tr>
     </table>

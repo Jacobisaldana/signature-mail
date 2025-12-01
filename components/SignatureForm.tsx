@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FormData, BrandColors, TemplateId } from '../types';
-import { TemplateSelector } from './TemplateSelector';
+import { FormData, BrandColors } from '../types';
 import { uploadAvatar } from '../storage/supabaseStorage';
 import { useAuth } from '../auth/AuthContext';
 import ImageCropper from './ImageCropper';
@@ -12,8 +11,6 @@ interface SignatureFormProps {
   colors: BrandColors;
   setColors: React.Dispatch<React.SetStateAction<BrandColors>>;
   setImageData: React.Dispatch<React.SetStateAction<string | null>>;
-  selectedTemplates: TemplateId[];
-  setSelectedTemplates: React.Dispatch<React.SetStateAction<TemplateId[]>>;
   imageData: string | null;
   onGenerate: () => void;
   onReset: () => void;
@@ -43,7 +40,7 @@ const ColorPicker: React.FC<{ label: string; value: string; onChange: (e: React.
     </div>
 );
 
-export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, colors, setColors, setImageData, selectedTemplates, setSelectedTemplates, imageData, onGenerate, onReset }) => {
+export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, colors, setColors, setImageData, imageData, onGenerate, onReset }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const [cropFile, setCropFile] = useState<File | null>(null);
@@ -144,12 +141,6 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
     }
   };
 
-  const handleTemplateToggle = (id: TemplateId) => {
-    setSelectedTemplates(prev =>
-      prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
-    );
-  };
-
   return (
     <>
     <div className="space-y-8 p-4 md:p-6">
@@ -214,11 +205,6 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
                 <ColorPicker label="Text" value={colors.text} onChange={(e) => setColors(p => ({...p, text: e.target.value}))} />
                 <ColorPicker label="Background" value={colors.background} onChange={(e) => setColors(p => ({...p, background: e.target.value}))} />
             </div>
-        </div>
-
-        {/* Template Selection */}
-        <div className="p-6 border border-gray-200 rounded-lg bg-white">
-            <TemplateSelector selectedTemplates={selectedTemplates} onTemplateToggle={handleTemplateToggle} colors={colors} />
         </div>
 
         {/* Actions */}

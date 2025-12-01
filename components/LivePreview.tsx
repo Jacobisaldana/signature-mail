@@ -8,27 +8,20 @@ interface LivePreviewProps {
   formData: FormData;
   colors: BrandColors;
   imageData: string | null;
-  selectedTemplates: TemplateId[];
+  selectedTemplate: TemplateId;
+  onTemplateChange: (id: TemplateId) => void;
 }
 
 export const LivePreview: React.FC<LivePreviewProps> = ({
   formData,
   colors,
   imageData,
-  selectedTemplates,
+  selectedTemplate,
+  onTemplateChange,
 }) => {
-  const [activeTemplateIndex, setActiveTemplateIndex] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [copied, setCopied] = useState(false);
-
-  // Auto-adjust to first selected template if current index is out of bounds
-  useEffect(() => {
-    if (activeTemplateIndex >= selectedTemplates.length) {
-      setActiveTemplateIndex(Math.max(0, selectedTemplates.length - 1));
-    }
-  }, [selectedTemplates.length, activeTemplateIndex]);
-
-  const currentTemplateId = selectedTemplates[activeTemplateIndex] || TemplateId.Modern;
+  const currentTemplateId = selectedTemplate || TemplateId.Modern;
   const currentTemplate = TEMPLATES.find(t => t.id === currentTemplateId);
 
   const signatureHtml = generateSignatureHtml(currentTemplateId, {
@@ -36,6 +29,11 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
     colors,
     imageData,
   });
+
+  useEffect(() => {
+    const timer = window.setTimeout(adjustIframeHeight, 30);
+    return () => window.clearTimeout(timer);
+  }, [signatureHtml, currentTemplateId]);
 
   const adjustIframeHeight = () => {
     const iframe = iframeRef.current;
@@ -112,13 +110,22 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
   };
 
   // Show placeholder if no required fields filled
-  const hasRequiredFields = formData.fullName && formData.jobTitle && formData.company && formData.email;
+  const hasContent =
+    !!(
+      formData.fullName ||
+      formData.email ||
+      formData.company ||
+      formData.jobTitle ||
+      formData.tagline ||
+      imageData
+    );
+  const canCopy = !!(formData.fullName && formData.email);
 
   return (
     <div className="flex flex-col h-full">
       {/* Header with template switcher */}
       <div className="bg-white border-b border-gray-200 p-4 flex-shrink-0">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between gap-3 mb-3">
           <h3 className="text-lg font-semibold text-gray-800">Live Preview</h3>
           <div className="flex gap-2">
             <button
@@ -136,43 +143,39 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
                   : 'bg-amber-500 hover:bg-amber-600 text-black'
               }`}
               title="Copy signature as rich HTML"
-              disabled={!hasRequiredFields}
+              disabled={!canCopy}
             >
               {copied ? '✓ Copied!' : 'Copy Signature'}
             </button>
           </div>
         </div>
 
-        {/* Template tabs if multiple selected */}
-        {selectedTemplates.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {selectedTemplates.map((templateId, index) => {
-              const template = TEMPLATES.find(t => t.id === templateId);
-              return (
-                <button
-                  key={templateId}
-                  onClick={() => setActiveTemplateIndex(index)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap transition ${
-                    index === activeTemplateIndex
-                      ? 'bg-amber-500 text-black'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {template?.name || 'Template'}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {selectedTemplates.length === 0 && (
-          <p className="text-sm text-amber-600">⚠️ Please select at least one template below</p>
-        )}
+        {/* Template thumbnails (compact single-select) */}
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
+          {TEMPLATES.map((template) => {
+            const isSelected = selectedTemplate === template.id;
+            return (
+              <button
+                key={template.id}
+                onClick={() => onTemplateChange(template.id)}
+                className={`flex flex-col items-center justify-center px-2 py-2 rounded-lg border transition text-xs min-w-[90px] max-w-[110px] ${
+                  isSelected ? 'border-amber-500 bg-amber-50 text-gray-900' : 'border-gray-200 bg-white text-gray-600 hover:border-amber-300'
+                }`}
+                title={template.name}
+              >
+                <div className="w-full h-14 mb-1 rounded-md overflow-hidden">
+                  <template.component colors={colors} />
+                </div>
+                <span className="font-medium truncate w-full text-center">{template.name}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Preview area */}
       <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-        {hasRequiredFields && selectedTemplates.length > 0 ? (
+        {hasContent ? (
           <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
