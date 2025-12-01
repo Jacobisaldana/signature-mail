@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { FormData, BrandColors, TemplateId } from '../types';
 import { generateSignatureHtml } from '../services/signatureGenerator';
-import { TEMPLATES } from './TemplateSelector';
+import { TEMPLATES } from '../templates';
 import { SignatureCompatibilityChecker } from './SignatureCompatibilityChecker';
 
 interface LivePreviewProps {

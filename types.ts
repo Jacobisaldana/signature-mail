@@ -34,10 +34,17 @@ export enum TemplateId {
   SocialFocus = 'social-focus',
 }
 
+export interface TemplateRenderParams {
+  data: FormData;
+  colors: BrandColors;
+  imageData: string | null;
+}
+
 export interface Template {
   id: TemplateId;
   name: string;
   component: React.FC<{ colors: BrandColors }>;
+  render: (params: TemplateRenderParams) => string;
 }
 
 export interface Signature {
