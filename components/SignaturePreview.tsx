@@ -4,9 +4,10 @@ import { Signature } from '../types';
 
 interface SignaturePreviewProps {
   signature: Signature;
+  onEdit?: () => void;
 }
 
-export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature }) => {
+export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature, onEdit }) => {
   const [showCode, setShowCode] = useState(false);
   const [copied, setCopied] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -110,8 +111,26 @@ export const SignaturePreview: React.FC<SignaturePreviewProps> = ({ signature })
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden transition-shadow hover:shadow-md">
       <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-        <h3 className="text-md font-semibold text-gray-800">{signature.name}</h3>
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-md font-semibold text-gray-800">{signature.name}</h3>
+            <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+              {signature.label}
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Plantilla: {signature.templateId} · Guardado: {new Date(signature.createdAt).toLocaleString()}
+          </p>
+        </div>
         <div className="flex items-center space-x-2">
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="px-3 py-1 text-xs font-semibold text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition"
+            >
+              Editar en editor
+            </button>
+          )}
           <button
             onClick={() => setShowCode(!showCode)}
             className="px-3 py-1 text-xs font-semibold text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"

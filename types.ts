@@ -43,5 +43,12 @@ export interface Template {
 export interface Signature {
   id: string;
   name: string;
+  label: string;
+  templateId: TemplateId;
+  formData: FormData;
+  colors: BrandColors;
+  imageUrl: string | null;
   html: string;
+  createdAt: string;
+  updatedAt: string;
 }

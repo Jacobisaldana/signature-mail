@@ -10,6 +10,7 @@ interface LivePreviewProps {
   imageData: string | null;
   selectedTemplate: TemplateId;
   onTemplateChange: (id: TemplateId) => void;
+  onSaveSignature: () => void;
 }
 
 export const LivePreview: React.FC<LivePreviewProps> = ({
@@ -18,6 +19,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
   imageData,
   selectedTemplate,
   onTemplateChange,
+  onSaveSignature,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [copied, setCopied] = useState(false);
@@ -120,6 +122,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
       imageData
     );
   const canCopy = !!(formData.fullName && formData.email);
+  const canSave = canCopy && imageData !== 'uploading';
 
   return (
     <div className="flex flex-col h-full">
@@ -128,6 +131,14 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
         <div className="flex items-center justify-between gap-3 mb-3">
           <h3 className="text-lg font-semibold text-gray-800">Live Preview</h3>
           <div className="flex gap-2">
+            <button
+              onClick={onSaveSignature}
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-amber-600 rounded-md hover:bg-amber-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              title="Save this signature for later"
+              disabled={!canSave}
+            >
+              Save Signature
+            </button>
             <button
               onClick={handleCopyCode}
               className="px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition"

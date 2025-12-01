@@ -28,3 +28,24 @@ export function getIconUrlsFromSupabase(bucket: string = ICONS_BUCKET) {
     website: make('website.png'),
   };
 }
+
+export async function listUserAvatars(userId: string, bucket: string = AVATARS_BUCKET) {
+  const { data, error } = await supabase.storage.from(bucket).list(userId, {
+    limit: 50,
+    offset: 0,
+    sortBy: { column: 'created_at', order: 'desc' },
+  });
+  if (error) throw error;
+
+  return (
+    data?.map((file) => {
+      const path = `${userId}/${file.name}`;
+      const { data: publicUrl } = supabase.storage.from(bucket).getPublicUrl(path);
+      const version = file.updated_at || file.created_at || new Date().toISOString();
+      return {
+        key: path,
+        url: `${publicUrl.publicUrl}?v=${new Date(version).getTime()}`,
+      };
+    }) || []
+  );
+}

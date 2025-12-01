@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SignatureForm } from './components/SignatureForm';
 import { LivePreview } from './components/LivePreview';
-import { FormData, BrandColors, TemplateId } from './types';
-import { setIconUrls } from './services/signatureGenerator';
+import { FormData, BrandColors, TemplateId, Signature } from './types';
+import { setIconUrls, generateSignatureHtml } from './services/signatureGenerator';
 import { useAuth } from './auth/AuthContext';
 import { supabase } from './supabaseClient';
 import { Auth } from './components/Auth';
 import { getIconUrlsFromSupabase } from './storage/supabaseStorage';
+import { SaveSignatureModal } from './components/SaveSignatureModal';
+import { fetchSignatures, saveSignature } from './services/signatureStorage';
+import { ProfilePage } from './components/ProfilePage';
 
 const initialFormData: FormData = {
   fullName: '', jobTitle: '', company: '', email: '', phone: '', website: '',
@@ -29,6 +32,30 @@ function App() {
   const [colors, setColors] = useState<BrandColors>(initialColors);
   const [imageData, setImageData] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(TemplateId.Modern);
+  const [activeView, setActiveView] = useState<'builder' | 'profile'>('builder');
+  const [signatures, setSignatures] = useState<Signature[]>([]);
+  const [signaturesLoading, setSignaturesLoading] = useState(false);
+  const [signaturesError, setSignaturesError] = useState<string | null>(null);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [savingSignature, setSavingSignature] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveDefaults, setSaveDefaults] = useState({ name: '', label: 'Personal' });
+  const [editingSignatureId, setEditingSignatureId] = useState<string | null>(null);
+
+  const loadSignatures = useCallback(async () => {
+    if (!user) return;
+    setSignaturesLoading(true);
+    setSignaturesError(null);
+    try {
+      const rows = await fetchSignatures(user.id);
+      setSignatures(rows);
+    } catch (err: any) {
+      console.error('Could not load signatures', err);
+      setSignaturesError(err?.message || 'No se pudieron cargar tus firmas.');
+    } finally {
+      setSignaturesLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     try {
@@ -72,13 +99,100 @@ function App() {
     localStorage.setItem('signatureBrandColors', JSON.stringify(colors));
   }, [colors]);
 
+  useEffect(() => {
+    if (user) {
+      loadSignatures();
+    } else {
+      setSignatures([]);
+    }
+  }, [user, loadSignatures]);
+
   const handleReset = () => {
     if(window.confirm('Are you sure you want to clear all fields?')) {
         setFormData(initialFormData);
         setColors(initialColors);
         setImageData(null);
         setSelectedTemplate(TemplateId.Modern);
+        setEditingSignatureId(null);
+        setSaveDefaults({ name: '', label: 'Personal' });
     }
+  };
+
+  const openSaveModal = () => {
+    if (!formData.fullName || !formData.email) {
+      alert('Agrega al menos nombre completo y correo para guardar tu firma.');
+      return;
+    }
+    if (imageData === 'uploading') {
+      alert('Espera a que la imagen termine de subir antes de guardar.');
+      return;
+    }
+    setSaveDefaults((prev) => {
+      const suggestedName = formData.fullName ? `${formData.fullName}${formData.company ? ` - ${formData.company}` : ''}` : prev.name || 'Nueva firma';
+      return { name: suggestedName, label: prev.label || 'Personal' };
+    });
+    setSaveError(null);
+    setSaveModalOpen(true);
+  };
+
+  const handleSaveSignature = async (name: string, label: string) => {
+    if (!user) {
+      setSaveError('Debes iniciar sesión para guardar firmas.');
+      return;
+    }
+    if (!formData.fullName || !formData.email) {
+      setSaveError('Completa el nombre completo y el correo electrónico.');
+      return;
+    }
+    if (imageData === 'uploading') {
+      setSaveError('Espera a que termine la carga de la imagen.');
+      return;
+    }
+
+    setSavingSignature(true);
+    setSaveError(null);
+    try {
+      const imageUrl = imageData && imageData !== 'uploading' ? imageData : null;
+      const html = generateSignatureHtml(selectedTemplate, {
+        data: formData,
+        colors,
+        imageData: imageUrl,
+      }).trim();
+      const saved = await saveSignature({
+        id: editingSignatureId || undefined,
+        userId: user.id,
+        name: name.trim() || formData.fullName || 'Firma sin título',
+        label: label.trim() || 'Personal',
+        templateId: selectedTemplate,
+        formData,
+        colors,
+        imageUrl,
+        html,
+      });
+      setSaveDefaults({ name: saved.name, label: saved.label });
+      setEditingSignatureId(saved.id);
+      setSignatures((prev) => {
+        const others = prev.filter((s) => s.id !== saved.id);
+        return [saved, ...others];
+      });
+      setSaveModalOpen(false);
+      loadSignatures();
+    } catch (err: any) {
+      console.error('Save signature failed', err);
+      setSaveError(err?.message || 'No se pudo guardar la firma.');
+    } finally {
+      setSavingSignature(false);
+    }
+  };
+
+  const handleEditSignature = (signature: Signature) => {
+    setFormData(signature.formData);
+    setColors(signature.colors);
+    setImageData(signature.imageUrl);
+    setSelectedTemplate(signature.templateId);
+    setEditingSignatureId(signature.id);
+    setSaveDefaults({ name: signature.name, label: signature.label });
+    setActiveView('builder');
   };
 
   if (loading) {
@@ -103,6 +217,24 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveView('builder')}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition ${
+                    activeView === 'builder' ? 'bg-amber-500 text-black border-amber-500' : 'bg-gray-200 text-gray-700 border-gray-200 hover:bg-gray-300'
+                  }`}
+                >
+                  Editor
+                </button>
+                <button
+                  onClick={() => { setActiveView('profile'); loadSignatures(); }}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition ${
+                    activeView === 'profile' ? 'bg-amber-500 text-black border-amber-500' : 'bg-gray-200 text-gray-700 border-gray-200 hover:bg-gray-300'
+                  }`}
+                >
+                  Perfil
+                </button>
+              </div>
               <span className="hidden md:inline text-sm text-gray-600">{user?.email}</span>
               <button
                 onClick={() => supabase.auth.signOut()}
@@ -116,44 +248,68 @@ function App() {
       </header>
 
       {/* Main Content - Side by Side Layout */}
-      <main className="container mx-auto px-4 py-6 max-w-[1800px]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-140px)]">
-          {/* Left Panel - Design Form */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
-            <div className="bg-gradient-to-r from-amber-500 to-amber-400 px-6 py-4 flex-shrink-0">
-              <h2 className="text-xl font-bold text-black">Design Your Signature</h2>
-              <p className="text-sm text-gray-800 mt-1">Changes update instantly on the right →</p>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              <SignatureForm
-                formData={formData}
-                setFormData={setFormData}
-                colors={colors}
-                setColors={setColors}
-                imageData={imageData}
-                setImageData={setImageData}
-                onGenerate={() => {}} // No longer needed - preview is live
-                onReset={handleReset}
-              />
-            </div>
-          </div>
+      <main className="py-6">
+        {activeView === 'builder' ? (
+          <div className="container mx-auto px-4 max-w-[1800px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-140px)]">
+              {/* Left Panel - Design Form */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
+                <div className="bg-gradient-to-r from-amber-500 to-amber-400 px-6 py-4 flex-shrink-0">
+                  <h2 className="text-xl font-bold text-black">Design Your Signature</h2>
+                  <p className="text-sm text-gray-800 mt-1">Changes update instantly on the right →</p>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  <SignatureForm
+                    formData={formData}
+                    setFormData={setFormData}
+                    colors={colors}
+                    setColors={setColors}
+                    imageData={imageData}
+                    setImageData={setImageData}
+                    onGenerate={() => {}} // No longer needed - preview is live
+                    onReset={handleReset}
+                  />
+                </div>
+              </div>
 
-          {/* Right Panel - Live Preview */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
-            <LivePreview
-              formData={formData}
-              colors={colors}
-              imageData={imageData}
-              selectedTemplate={selectedTemplate}
-              onTemplateChange={setSelectedTemplate}
-            />
+              {/* Right Panel - Live Preview */}
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
+                <LivePreview
+                  formData={formData}
+                  colors={colors}
+                  imageData={imageData}
+                  selectedTemplate={selectedTemplate}
+                  onTemplateChange={setSelectedTemplate}
+                  onSaveSignature={openSaveModal}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <ProfilePage
+            user={user}
+            signatures={signatures}
+            loading={signaturesLoading}
+            error={signaturesError}
+            onRefresh={loadSignatures}
+            onEditSignature={handleEditSignature}
+          />
+        )}
       </main>
 
       <footer className="text-center py-6 text-gray-500 text-sm">
         <p>Designed by <a href="https://masvirtual.co" target="_blank" rel="noopener noreferrer" className="font-semibold text-gray-600 hover:text-amber-600 transition">masvirtual.co</a></p>
       </footer>
+
+      <SaveSignatureModal
+        open={saveModalOpen}
+        initialName={saveDefaults.name}
+        initialLabel={saveDefaults.label}
+        onCancel={() => setSaveModalOpen(false)}
+        onConfirm={handleSaveSignature}
+        saving={savingSignature}
+        error={saveError}
+      />
     </div>
   );
 }

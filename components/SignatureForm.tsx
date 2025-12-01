@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormData, BrandColors } from '../types';
-import { uploadAvatar } from '../storage/supabaseStorage';
+import { listUserAvatars, uploadAvatar } from '../storage/supabaseStorage';
 import { useAuth } from '../auth/AuthContext';
 import ImageCropper from './ImageCropper';
 import { validateImageForEmail, optimizeImageForEmail } from '../utils/imageOptimizer';
@@ -46,6 +46,36 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [isCropping, setIsCropping] = useState(false);
   const uploadVersionRef = useRef(0);
+  const [savedAvatars, setSavedAvatars] = useState<string[]>([]);
+  const [savedAvatarsLoading, setSavedAvatarsLoading] = useState(false);
+  const [savedAvatarsError, setSavedAvatarsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (!user) {
+        setSavedAvatars([]);
+        return;
+      }
+      setSavedAvatarsLoading(true);
+      setSavedAvatarsError(null);
+      try {
+        const items = await listUserAvatars(user.id);
+        if (!active) return;
+        setSavedAvatars(items.map((i) => i.url));
+      } catch (err: any) {
+        if (!active) return;
+        console.error('Could not list avatars', err);
+        setSavedAvatarsError(err?.message || 'Could not load your uploaded images.');
+      } finally {
+        if (active) setSavedAvatarsLoading(false);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -158,6 +188,51 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/png, image/jpeg, image/gif" className="hidden" />
                     <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF (Max 2MB). Recommended: 200×200px. You can crop and adjust before uploading.</p>
                 </div>
+            </div>
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-gray-700">Previously uploaded</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // force reload list
+                    if (!user) return;
+                    setSavedAvatarsError(null);
+                    setSavedAvatarsLoading(true);
+                    listUserAvatars(user.id)
+                      .then((items) => setSavedAvatars(items.map((i) => i.url)))
+                      .catch((err: any) => setSavedAvatarsError(err?.message || 'Could not refresh images.'))
+                      .finally(() => setSavedAvatarsLoading(false));
+                  }}
+                  className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                  disabled={savedAvatarsLoading}
+                >
+                  {savedAvatarsLoading ? 'Loading…' : 'Refresh'}
+                </button>
+              </div>
+              {savedAvatarsError && <p className="text-xs text-red-600 mb-2">{savedAvatarsError}</p>}
+              {savedAvatarsLoading && savedAvatars.length === 0 ? (
+                <p className="text-xs text-gray-500">Loading your images…</p>
+              ) : savedAvatars.length > 0 ? (
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {savedAvatars.map((url) => {
+                    const isActive = imageData === url;
+                    return (
+                      <button
+                        type="button"
+                        key={url}
+                        onClick={() => setImageData(url)}
+                        className={`w-16 h-16 rounded-full overflow-hidden border-2 ${isActive ? 'border-amber-500' : 'border-transparent'} shadow-sm hover:shadow-md transition`}
+                        title="Use this image"
+                      >
+                        <img src={url} alt="Saved avatar" className="w-full h-full object-cover" />
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500">You will see your uploaded images here to reuse them in other signatures.</p>
+              )}
             </div>
         </div>
         
