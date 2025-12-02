@@ -207,17 +207,32 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
               );
             })}
           </div>
-          <button
-            onClick={() => scrollTemplates('right')}
-            className="hidden md:inline-flex px-2 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"
-            title="Next templates"
-          >
-            ›
-          </button>
-        </div>
+        <button
+          onClick={() => scrollTemplates('right')}
+          className="hidden md:inline-flex px-2 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"
+          title="Next templates"
+        >
+          ›
+        </button>
       </div>
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-700">
+        <span className="font-semibold">Brand colors:</span>
+        {(['primary', 'secondary', 'text', 'background'] as (keyof BrandColors)[]).map((key) => (
+          <label key={key} className="flex items-center gap-1">
+            <span className="capitalize">{key}</span>
+            <input
+              type="color"
+              value={colors[key]}
+              onChange={(e) => onColorsChange((prev) => ({ ...prev, [key]: e.target.value }))}
+              className="w-8 h-8 rounded-md border border-gray-300 cursor-pointer p-0 appearance-none"
+              style={{ backgroundColor: colors[key] }}
+            />
+          </label>
+        ))}
+      </div>
+    </div>
 
-      {/* Preview area */}
+    {/* Preview area */}
       <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 p-6">
         {hasContent ? (
           <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
