@@ -111,11 +111,6 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         return;
       }
 
-      // Show warnings if any
-      if (validation.warnings.length > 0) {
-        console.log('Image warnings:', validation.warnings.join('\n'));
-      }
-
       // Open cropper first; upload after user confirms
       uploadVersionRef.current += 1; // invalidate any pending uploads
       setCropFile(file);
@@ -156,8 +151,6 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
         quality: 0.85,
         outputFormat: 'image/jpeg',
       });
-
-      console.log(`Image optimized: ${blob.size} bytes → ${optimizedBlob.size} bytes`);
 
       // Show temporary placeholder while uploading
       setImageData('uploading');
