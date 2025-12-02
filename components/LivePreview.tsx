@@ -13,7 +13,18 @@ interface LivePreviewProps {
   onTemplateChange: (id: TemplateId) => void;
   onSaveSignature: () => void;
   onColorsChange: (updater: (prev: BrandColors) => BrandColors) => void;
+  onFontChange: (font: string) => void;
 }
+
+const FONT_OPTIONS = [
+  { label: 'Arial', value: 'Arial, sans-serif' },
+  { label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+  { label: 'Tahoma', value: 'Tahoma, Geneva, sans-serif' },
+  { label: 'Trebuchet MS', value: 'Trebuchet MS, sans-serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Times New Roman', value: 'Times New Roman, Times, serif' },
+  { label: 'Courier New', value: 'Courier New, monospace' },
+];
 
 export const LivePreview: React.FC<LivePreviewProps> = ({
   formData,
@@ -24,6 +35,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
   onTemplateChange,
   onSaveSignature,
   onColorsChange,
+  onFontChange,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const templatesRef = useRef<HTMLDivElement>(null);
@@ -229,6 +241,20 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
             />
           </label>
         ))}
+        <div className="flex items-center gap-1 ml-auto">
+          <span className="font-semibold">Font:</span>
+          <select
+            value={fontFamily}
+            onChange={(e) => onFontChange(e.target.value)}
+            className="text-xs border border-gray-300 rounded-md px-2 py-1 focus:ring-amber-500 focus:border-amber-500 transition"
+          >
+            {FONT_OPTIONS.map((font) => (
+              <option key={font.value} value={font.value}>
+                {font.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
 

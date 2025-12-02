@@ -275,10 +275,6 @@ function App() {
                   <SignatureForm
                     formData={formData}
                     setFormData={setFormData}
-                    colors={colors}
-                    setColors={setColors}
-                    fontFamily={fontFamily}
-                    setFontFamily={setFontFamily}
                     imageData={imageData}
                     setImageData={setImageData}
                     onGenerate={() => {}} // No longer needed - preview is live
@@ -298,6 +294,7 @@ function App() {
                   onTemplateChange={setSelectedTemplate}
                   onSaveSignature={openSaveModal}
                   onColorsChange={setColors}
+                  onFontChange={setFontFamily}
                 />
               </div>
             </div>

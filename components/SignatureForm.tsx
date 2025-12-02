@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FormData, BrandColors } from '../types';
+import { FormData } from '../types';
 import { listUserAvatars, uploadAvatar } from '../storage/supabaseStorage';
 import { useAuth } from '../auth/AuthContext';
 import ImageCropper from './ImageCropper';
@@ -8,8 +8,6 @@ import { validateImageForEmail, optimizeImageForEmail } from '../utils/imageOpti
 interface SignatureFormProps {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-  fontFamily: string;
-  setFontFamily: React.Dispatch<React.SetStateAction<string>>;
   setImageData: React.Dispatch<React.SetStateAction<string | null>>;
   imageData: string | null;
   onGenerate: () => void;
@@ -31,26 +29,7 @@ const InputField: React.FC<{ id: keyof FormData; label: string; value: string; o
     </div>
 );
 
-const ColorPicker: React.FC<{ label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; }> = ({ label, value, onChange }) => (
-    <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-        <div className="relative">
-            <input type="color" value={value} onChange={onChange} className="w-8 h-8 rounded-md border border-gray-300 cursor-pointer p-0 appearance-none" style={{backgroundColor: value}}/>
-        </div>
-    </div>
-);
-
-const FONT_OPTIONS = [
-  { label: 'Arial', value: 'Arial, sans-serif' },
-  { label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
-  { label: 'Tahoma', value: 'Tahoma, Geneva, sans-serif' },
-  { label: 'Trebuchet MS', value: 'Trebuchet MS, sans-serif' },
-  { label: 'Georgia', value: 'Georgia, serif' },
-  { label: 'Times New Roman', value: 'Times New Roman, Times, serif' },
-  { label: 'Courier New', value: 'Courier New, monospace' },
-];
-
-export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, fontFamily, setFontFamily, setImageData, imageData, onGenerate, onReset }) => {
+export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, setImageData, imageData, onGenerate, onReset }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const [cropFile, setCropFile] = useState<File | null>(null);
@@ -267,28 +246,6 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
                 <InputField id="instagram" label="Instagram URL" value={formData.instagram} onChange={handleInputChange} type="url" placeholder="https://instagram.com/..." />
                 <InputField id="facebook" label="Facebook URL" value={formData.facebook} onChange={handleInputChange} type="url" placeholder="https://facebook.com/..." />
             </div>
-        </div>
-
-        {/* Font */}
-        <div className="p-6 border border-gray-200 rounded-lg bg-white">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Typography</h3>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Font</label>
-            <select
-              value={fontFamily}
-              onChange={(e) => setFontFamily(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 transition"
-            >
-              {FONT_OPTIONS.map((font) => (
-                <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
-                  {font.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1" style={{ fontFamily }}>
-              Preview text in selected font: The quick brown fox jumps over the lazy dog.
-            </p>
-          </div>
         </div>
 
         {/* Actions */}
