@@ -297,6 +297,7 @@ function App() {
                   selectedTemplate={selectedTemplate}
                   onTemplateChange={setSelectedTemplate}
                   onSaveSignature={openSaveModal}
+                  onColorsChange={setColors}
                 />
               </div>
             </div>

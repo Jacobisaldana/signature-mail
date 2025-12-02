@@ -12,6 +12,7 @@ interface LivePreviewProps {
   selectedTemplate: TemplateId;
   onTemplateChange: (id: TemplateId) => void;
   onSaveSignature: () => void;
+  onColorsChange: (updater: (prev: BrandColors) => BrandColors) => void;
 }
 
 export const LivePreview: React.FC<LivePreviewProps> = ({
@@ -22,6 +23,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
   selectedTemplate,
   onTemplateChange,
   onSaveSignature,
+  onColorsChange,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const templatesRef = useRef<HTMLDivElement>(null);
@@ -273,6 +275,25 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Brand colors */}
+      <div className="bg-white border-t border-gray-200 p-4 flex flex-col gap-3">
+        <h4 className="text-sm font-semibold text-gray-800">Brand Colors</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {(['primary', 'secondary', 'text', 'background'] as (keyof BrandColors)[]).map((key) => (
+            <label key={key} className="flex items-center justify-between gap-2 text-sm text-gray-700">
+              <span className="capitalize">{key}</span>
+              <input
+                type="color"
+                value={colors[key]}
+                onChange={(e) => onColorsChange((prev) => ({ ...prev, [key]: e.target.value }))}
+                className="w-10 h-10 rounded-md border border-gray-300 cursor-pointer p-0 appearance-none"
+                style={{ backgroundColor: colors[key] }}
+              />
+            </label>
+          ))}
+        </div>
       </div>
     </div>
   );
