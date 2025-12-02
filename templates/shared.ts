@@ -2,6 +2,14 @@ import { BrandColors, FormData, TemplateRenderParams } from '../types';
 
 export type TemplateRenderProps = TemplateRenderParams;
 
+export const normalizeUrl = (url?: string | null) => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
 type IconUrls = {
   linkedin: string;
   twitter: string;
@@ -46,10 +54,14 @@ export const generateSocialIcons = (data: FormData): string => {
     `);
   };
 
-  if (data.linkedin) push(data.linkedin, icons.linkedin, 'LinkedIn');
-  if (data.twitter) push(data.twitter, icons.twitter, 'X (Twitter)');
-  if (data.instagram) push(data.instagram, icons.instagram, 'Instagram');
-  if (data.facebook) push(data.facebook, icons.facebook, 'Facebook');
+  const linkedinUrl = normalizeUrl(data.linkedin);
+  if (linkedinUrl) push(linkedinUrl, icons.linkedin, 'LinkedIn');
+  const twitterUrl = normalizeUrl(data.twitter);
+  if (twitterUrl) push(twitterUrl, icons.twitter, 'X (Twitter)');
+  const instagramUrl = normalizeUrl(data.instagram);
+  if (instagramUrl) push(instagramUrl, icons.instagram, 'Instagram');
+  const facebookUrl = normalizeUrl(data.facebook);
+  if (facebookUrl) push(facebookUrl, icons.facebook, 'Facebook');
 
   if (!cells.length) return '';
   return `
@@ -62,7 +74,8 @@ export const generateSocialIcons = (data: FormData): string => {
 };
 
 export const generateCalendarButton = (data: FormData, colors: BrandColors): string => {
-  if (!data.calendarUrl) return '';
+  const calendarHref = normalizeUrl(data.calendarUrl);
+  if (!calendarHref) return '';
   const icons = getIconUrls();
   const buttonText = data.calendarText || 'Schedule a meeting';
   const textColor = '#ffffff';
@@ -70,7 +83,7 @@ export const generateCalendarButton = (data: FormData, colors: BrandColors): str
     <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="padding-top: 12px;">
       <tr>
         <td>
-          <a href="${data.calendarUrl}" target="_blank" style="display: inline-block; background-color: ${colors.primary}; color: ${textColor}; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-decoration: none; padding: 8px 12px; border-radius: 5px;">
+          <a href="${calendarHref}" target="_blank" style="display: inline-block; background-color: ${colors.primary}; color: ${textColor}; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; text-decoration: none; padding: 8px 12px; border-radius: 5px;">
             <table cellpadding="0" cellspacing="0" border="0" role="presentation">
               <tr>
                 <td style="vertical-align: middle;"><img src="${icons.calendar}" alt="calendar" width="16" height="16" style="display: block;" border="0"></td>

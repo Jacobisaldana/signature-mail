@@ -1,6 +1,6 @@
 import { Template, TemplateId } from '../types';
 import { MinimalistPreview } from './previews';
-import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls } from './shared';
+import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls, normalizeUrl } from './shared';
 
 const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
@@ -14,8 +14,16 @@ const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) =>
           <p style="margin: 2px 0 8px 0; color: ${colors.secondary}; font-weight: bold;">${data.company}</p>
           ${data.email ? `<p style="margin: 4px 0;"><img src="${icons.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
           ${data.phone ? `<p style="margin: 4px 0;"><img src="${icons.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
-          ${data.website ? `<p style="margin: 4px 0;"><img src="${icons.website}" alt="Website" width="14" height="14" style="vertical-align: middle; margin-right: 4px; border:0;" /> <a href="${data.website}" target="_blank" style="color: ${colors.primary}; text-decoration: none;">${data.website}</a></p>` : ''}
-          ${data.calendarUrl ? `<p style="margin: 6px 0 0 0;"><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">→ ${data.calendarText || 'Schedule a meeting'}</a></p>` : ''}
+          ${(() => {
+            const websiteHref = normalizeUrl(data.website);
+            if (!websiteHref) return '';
+            return `<p style="margin: 4px 0;"><img src="${icons.website}" alt="Website" width="14" height="14" style="vertical-align: middle; margin-right: 4px; border:0;" /> <a href="${websiteHref}" target="_blank" style="color: ${colors.primary}; text-decoration: none;">${websiteHref.replace(/https?:\/\//, '')}</a></p>`;
+          })()}
+          ${(() => {
+            const calendarHref = normalizeUrl(data.calendarUrl);
+            if (!calendarHref) return '';
+            return `<p style="margin: 6px 0 0 0;"><a href="${calendarHref}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">→ ${data.calendarText || 'Schedule a meeting'}</a></p>`;
+          })()}
         </td>
       </tr>
     </table>

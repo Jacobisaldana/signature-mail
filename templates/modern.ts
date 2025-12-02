@@ -1,6 +1,6 @@
 import { Template, TemplateId } from '../types';
 import { ModernPreview } from './previews';
-import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls } from './shared';
+import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls, normalizeUrl } from './shared';
 
 const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
@@ -16,7 +16,11 @@ const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) =>
             <tr><td>
             ${data.phone ? `<p style="margin: 4px 0;"><img src="${icons.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
             ${data.email ? `<p style="margin: 4px 0;"><img src="${icons.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
-            ${data.website ? `<p style="margin: 4px 0;"><img src="${icons.website}" alt="Website" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="${data.website}" target="_blank" style="color: ${colors.text}; text-decoration: none;">${data.website.replace(/https?:\/\//, '')}</a></p>` : ''}
+            ${data.website ? (() => {
+              const websiteHref = normalizeUrl(data.website);
+              if (!websiteHref) return '';
+              return `<p style="margin: 4px 0;"><img src="${icons.website}" alt="Website" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="${websiteHref}" target="_blank" style="color: ${colors.text}; text-decoration: none;">${websiteHref.replace(/https?:\/\//, '')}</a></p>`;
+            })() : ''}
             </td></tr>
           </table>
           ${generateCalendarButton(data, colors)}

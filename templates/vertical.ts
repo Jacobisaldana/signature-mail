@@ -1,6 +1,6 @@
 import { Template, TemplateId } from '../types';
 import { VerticalPreview } from './previews';
-import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls } from './shared';
+import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls, normalizeUrl } from './shared';
 
 const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
@@ -17,7 +17,11 @@ const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) =>
           ${data.email ? `<p style="margin: 4px 0;"><img src="${icons.email}" alt="Email" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="mailto:${data.email}" style="color: ${colors.text}; text-decoration: none;">${data.email}</a></p>` : ''}
           ${data.phone ? `<p style="margin: 4px 0;"><img src="${icons.phone}" alt="Phone" width="14" height="14" style="vertical-align: middle; margin-right: 6px; border:0;" /> <a href="tel:${data.phone}" style="color: ${colors.text}; text-decoration: none;">${data.phone}</a></p>` : ''}
           ${data.address ? `<p style="margin: 4px 0;"><strong>A:</strong> ${data.address}</p>` : ''}
-          ${data.calendarUrl ? `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top:10px;"><tr><td><a href="${data.calendarUrl}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">${data.calendarText || 'Schedule a meeting'}</a></td></tr></table>` : ''}
+          ${(() => {
+            const calendarHref = normalizeUrl(data.calendarUrl);
+            if (!calendarHref) return '';
+            return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top:10px;"><tr><td><a href="${calendarHref}" target="_blank" style="color: ${colors.primary}; text-decoration: none; font-weight: bold;">${data.calendarText || 'Schedule a meeting'}</a></td></tr></table>`;
+          })()}
           <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top: 10px;"><tr><td>${generateSocialIcons(data)}</td></tr></table>
         </td>
       </tr>
