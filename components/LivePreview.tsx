@@ -7,6 +7,7 @@ import { SignatureCompatibilityChecker } from './SignatureCompatibilityChecker';
 interface LivePreviewProps {
   formData: FormData;
   colors: BrandColors;
+  fontFamily: string;
   imageData: string | null;
   selectedTemplate: TemplateId;
   onTemplateChange: (id: TemplateId) => void;
@@ -16,12 +17,14 @@ interface LivePreviewProps {
 export const LivePreview: React.FC<LivePreviewProps> = ({
   formData,
   colors,
+  fontFamily,
   imageData,
   selectedTemplate,
   onTemplateChange,
   onSaveSignature,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const templatesRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const currentTemplateId = selectedTemplate || TemplateId.Modern;
   const currentTemplate = TEMPLATES.find(t => t.id === currentTemplateId);
@@ -29,6 +32,7 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
   const signatureHtml = generateSignatureHtml(currentTemplateId, {
     data: formData,
     colors,
+    fontFamily,
     imageData,
   });
 
@@ -43,6 +47,13 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
       const contentHeight = iframe.contentWindow.document.body.scrollHeight;
       iframe.style.height = `${contentHeight + 10}px`;
     }
+  };
+
+  const scrollTemplates = (direction: 'left' | 'right') => {
+    const container = templatesRef.current;
+    if (!container) return;
+    const delta = direction === 'left' ? -200 : 200;
+    container.scrollBy({ left: delta, behavior: 'smooth' });
   };
 
   // Copies rich HTML to clipboard
@@ -161,26 +172,46 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
           </div>
         </div>
 
-        {/* Template thumbnails (compact single-select) */}
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
-          {TEMPLATES.map((template) => {
-            const isSelected = selectedTemplate === template.id;
-            return (
-              <button
-                key={template.id}
-                onClick={() => onTemplateChange(template.id)}
-                className={`flex flex-col items-center justify-center px-2 py-2 rounded-lg border transition text-xs min-w-[90px] max-w-[110px] ${
-                  isSelected ? 'border-amber-500 bg-amber-50 text-gray-900' : 'border-gray-200 bg-white text-gray-600 hover:border-amber-300'
-                }`}
-                title={template.name}
-              >
-                <div className="w-full h-14 mb-1 rounded-md overflow-hidden">
-                  <template.component colors={colors} />
-                </div>
-                <span className="font-medium truncate w-full text-center">{template.name}</span>
-              </button>
-            );
-          })}
+        {/* Template thumbnails slider */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => scrollTemplates('left')}
+            className="hidden md:inline-flex px-2 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"
+            title="Previous templates"
+          >
+            ‹
+          </button>
+          <div
+            ref={templatesRef}
+            className="flex gap-2 overflow-x-auto pb-1 scroll-smooth"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {TEMPLATES.map((template) => {
+              const isSelected = selectedTemplate === template.id;
+              return (
+                <button
+                  key={template.id}
+                  onClick={() => onTemplateChange(template.id)}
+                  className={`flex flex-col items-center justify-center px-2 py-2 rounded-lg border transition text-xs min-w-[110px] ${
+                    isSelected ? 'border-amber-500 bg-amber-50 text-gray-900' : 'border-gray-200 bg-white text-gray-600 hover:border-amber-300'
+                  }`}
+                  title={template.name}
+                >
+                  <div className="w-full h-14 mb-1 rounded-md overflow-hidden">
+                    <template.component colors={colors} />
+                  </div>
+                  <span className="font-medium truncate w-full text-center">{template.name}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => scrollTemplates('right')}
+            className="hidden md:inline-flex px-2 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition"
+            title="Next templates"
+          >
+            ›
+          </button>
         </div>
       </div>
 

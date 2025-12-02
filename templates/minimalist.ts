@@ -2,10 +2,10 @@ import { Template, TemplateId } from '../types';
 import { MinimalistPreview } from './previews';
 import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls } from './shared';
 
-const render = ({ data, colors, imageData }: TemplateRenderProps) => {
+const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
   return `
-    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: ${colors.text}; line-height: 1.5; table-layout: fixed;">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: ${fontFamily}; font-size: 13px; color: ${colors.text}; line-height: 1.5; table-layout: fixed;">
       <tr>
         ${imageData ? `<td valign="top" width="80" style="padding-right: 12px;"><img src="${imageData}" alt="${data.fullName}" width="60" height="60" style="display:block; border: 2px solid ${colors.primary}; border-radius: 50%;" /></td>` : ''}
         <td valign="top" style="border-left: 2px solid ${colors.primary}; padding-left: 15px;">

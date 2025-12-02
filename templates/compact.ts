@@ -2,10 +2,10 @@ import { Template, TemplateId } from '../types';
 import { CompactPreview } from './previews';
 import { TemplateRenderProps, getIconUrls } from './shared';
 
-const render = ({ data, colors, imageData }: TemplateRenderProps) => {
+const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
   return `
-    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Arial, sans-serif; font-size: 12px; color: ${colors.text}; table-layout: fixed;">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: ${fontFamily}; font-size: 12px; color: ${colors.text}; table-layout: fixed;">
       <tr>
         <td style="font-weight: bold; color: ${colors.primary};">${data.fullName}</td>
         <td style="padding: 0 5px; color: #cccccc;">|</td>

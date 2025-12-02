@@ -2,10 +2,10 @@ import { Template, TemplateId } from '../types';
 import { ClassicPreview } from './previews';
 import { TemplateRenderProps, generateCalendarButton, getIconUrls } from './shared';
 
-const render = ({ data, colors, imageData }: TemplateRenderProps) => {
+const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
   return `
-    <table cellpadding="0" cellspacing="0" style="font-family: 'Times New Roman', Times, serif; font-size: 14px; color: ${colors.text};">
+    <table cellpadding="0" cellspacing="0" style="font-family: ${fontFamily}; font-size: 14px; color: ${colors.text};">
       <tr>
         ${imageData ? `<td style=\"padding-right: 15px;\"><img src=\"${imageData}\" alt=\"${data.fullName}\" width=\"70\" height=\"70\" style=\"display:block; border: 2px solid ${colors.primary}; border-radius: 50%;\"></td>` : ''}
         <td style="border-left: 1px solid #cccccc; padding-left: 15px; vertical-align: top;">

@@ -38,6 +38,7 @@ export interface TemplateRenderParams {
   data: FormData;
   colors: BrandColors;
   imageData: string | null;
+  fontFamily: string;
 }
 
 export interface Template {
@@ -54,6 +55,7 @@ export interface Signature {
   templateId: TemplateId;
   formData: FormData;
   colors: BrandColors;
+  fontFamily: string;
   imageUrl: string | null;
   html: string;
   createdAt: string;

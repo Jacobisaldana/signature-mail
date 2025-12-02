@@ -2,10 +2,10 @@ import { Template, TemplateId } from '../types';
 import { VerticalPreview } from './previews';
 import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls } from './shared';
 
-const render = ({ data, colors, imageData }: TemplateRenderProps) => {
+const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
   return `
-    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Calibri, sans-serif; font-size: 14px; color: ${colors.text}; table-layout: fixed;">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: ${fontFamily}; font-size: 14px; color: ${colors.text}; table-layout: fixed;">
       <tr>
         <td valign="top" width="140" style="background-color: ${colors.primary}; padding: 20px; border-radius: 8px 0 0 8px; text-align: center;">
           ${imageData ? `<span style=\"display:inline-block; border: 2px solid ${colors.primary}; border-radius: 50%; padding: 2px; background-color: #ffffff; margin-bottom: 10px;\"><img src=\"${imageData}\" alt=\"${data.fullName}\" width=\"72\" height=\"72\" style=\"display:block; border:0; border-radius: 50%;\"></span>` : ''}

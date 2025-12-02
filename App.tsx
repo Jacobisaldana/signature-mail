@@ -24,6 +24,8 @@ const initialColors: BrandColors = {
   background: '#ffffff'
 };
 
+const DEFAULT_FONT = 'Arial, sans-serif';
+
 const LOGO_URL = "https://contractorcommander.com/wp-content/uploads/2025/09/icon128.png";
 
 function App() {
@@ -32,6 +34,7 @@ function App() {
   const [colors, setColors] = useState<BrandColors>(initialColors);
   const [imageData, setImageData] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(TemplateId.Modern);
+  const [fontFamily, setFontFamily] = useState<string>(DEFAULT_FONT);
   const [activeView, setActiveView] = useState<'builder' | 'profile'>('builder');
   const [signatures, setSignatures] = useState<Signature[]>([]);
   const [signaturesLoading, setSignaturesLoading] = useState(false);
@@ -61,8 +64,10 @@ function App() {
     try {
         const savedData = localStorage.getItem('signatureFormData');
         const savedColors = localStorage.getItem('signatureBrandColors');
+        const savedFont = localStorage.getItem('signatureFontFamily');
         if (savedData) setFormData(JSON.parse(savedData));
         if (savedColors) setColors(JSON.parse(savedColors));
+        if (savedFont) setFontFamily(savedFont);
     } catch(error) {
         console.error("Failed to parse from localStorage", error);
     }
@@ -100,6 +105,10 @@ function App() {
   }, [colors]);
 
   useEffect(() => {
+    localStorage.setItem('signatureFontFamily', fontFamily);
+  }, [fontFamily]);
+
+  useEffect(() => {
     if (user) {
       loadSignatures();
     } else {
@@ -113,6 +122,7 @@ function App() {
         setColors(initialColors);
         setImageData(null);
         setSelectedTemplate(TemplateId.Modern);
+        setFontFamily(DEFAULT_FONT);
         setEditingSignatureId(null);
         setSaveDefaults({ name: '', label: 'Personal' });
     }
@@ -157,6 +167,7 @@ function App() {
         data: formData,
         colors,
         imageData: imageUrl,
+        fontFamily,
       }).trim();
       const saved = await saveSignature({
         id: editingSignatureId || undefined,
@@ -166,6 +177,7 @@ function App() {
         templateId: selectedTemplate,
         formData,
         colors,
+        fontFamily,
         imageUrl,
         html,
       });
@@ -190,6 +202,7 @@ function App() {
     setColors(signature.colors);
     setImageData(signature.imageUrl);
     setSelectedTemplate(signature.templateId);
+    setFontFamily(signature.fontFamily || DEFAULT_FONT);
     setEditingSignatureId(signature.id);
     setSaveDefaults({ name: signature.name, label: signature.label });
     setActiveView('builder');
@@ -264,6 +277,8 @@ function App() {
                     setFormData={setFormData}
                     colors={colors}
                     setColors={setColors}
+                    fontFamily={fontFamily}
+                    setFontFamily={setFontFamily}
                     imageData={imageData}
                     setImageData={setImageData}
                     onGenerate={() => {}} // No longer needed - preview is live
@@ -277,6 +292,7 @@ function App() {
                 <LivePreview
                   formData={formData}
                   colors={colors}
+                  fontFamily={fontFamily}
                   imageData={imageData}
                   selectedTemplate={selectedTemplate}
                   onTemplateChange={setSelectedTemplate}

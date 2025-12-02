@@ -10,6 +10,8 @@ interface SignatureFormProps {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   colors: BrandColors;
   setColors: React.Dispatch<React.SetStateAction<BrandColors>>;
+  fontFamily: string;
+  setFontFamily: React.Dispatch<React.SetStateAction<string>>;
   setImageData: React.Dispatch<React.SetStateAction<string | null>>;
   imageData: string | null;
   onGenerate: () => void;
@@ -40,7 +42,17 @@ const ColorPicker: React.FC<{ label: string; value: string; onChange: (e: React.
     </div>
 );
 
-export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, colors, setColors, setImageData, imageData, onGenerate, onReset }) => {
+const FONT_OPTIONS = [
+  { label: 'Arial', value: 'Arial, sans-serif' },
+  { label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+  { label: 'Tahoma', value: 'Tahoma, Geneva, sans-serif' },
+  { label: 'Trebuchet MS', value: 'Trebuchet MS, sans-serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Times New Roman', value: 'Times New Roman, Times, serif' },
+  { label: 'Courier New', value: 'Courier New, monospace' },
+];
+
+export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormData, colors, setColors, fontFamily, setFontFamily, setImageData, imageData, onGenerate, onReset }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const [cropFile, setCropFile] = useState<File | null>(null);
@@ -279,6 +291,23 @@ export const SignatureForm: React.FC<SignatureFormProps> = ({ formData, setFormD
                 <ColorPicker label="Secondary" value={colors.secondary} onChange={(e) => setColors(p => ({...p, secondary: e.target.value}))} />
                 <ColorPicker label="Text" value={colors.text} onChange={(e) => setColors(p => ({...p, text: e.target.value}))} />
                 <ColorPicker label="Background" value={colors.background} onChange={(e) => setColors(p => ({...p, background: e.target.value}))} />
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Font</label>
+              <select
+                value={fontFamily}
+                onChange={(e) => setFontFamily(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 transition"
+              >
+                {FONT_OPTIONS.map((font) => (
+                  <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                    {font.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1" style={{ fontFamily }}>
+                Preview text in selected font: The quick brown fox jumps over the lazy dog.
+              </p>
             </div>
         </div>
 

@@ -10,6 +10,7 @@ type SignatureRow = {
   form_data: FormData;
   colors: BrandColors;
   image_url: string | null;
+  font_family: string;
   html: string;
   created_at: string;
   updated_at: string;
@@ -22,6 +23,7 @@ const mapSignature = (row: SignatureRow): Signature => ({
   templateId: row.template_id,
   formData: row.form_data,
   colors: row.colors,
+  fontFamily: row.font_family || 'Arial, sans-serif',
   imageUrl: row.image_url,
   html: row.html,
   createdAt: row.created_at,
@@ -47,6 +49,7 @@ export async function saveSignature(params: {
   templateId: TemplateId;
   formData: FormData;
   colors: BrandColors;
+  fontFamily: string;
   imageUrl: string | null;
   html: string;
 }): Promise<Signature> {
@@ -57,6 +60,7 @@ export async function saveSignature(params: {
     template_id: params.templateId,
     form_data: params.formData,
     colors: params.colors,
+    font_family: params.fontFamily,
     image_url: params.imageUrl,
     html: params.html,
     updated_at: new Date().toISOString(),

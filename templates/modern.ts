@@ -2,10 +2,10 @@ import { Template, TemplateId } from '../types';
 import { ModernPreview } from './previews';
 import { TemplateRenderProps, generateCalendarButton, generateSocialIcons, getIconUrls } from './shared';
 
-const render = ({ data, colors, imageData }: TemplateRenderProps) => {
+const render = ({ data, colors, imageData, fontFamily }: TemplateRenderProps) => {
   const icons = getIconUrls();
   return `
-    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: Arial, sans-serif; font-size: 14px; color: ${colors.text}; background-color: ${colors.background}; border-left: 5px solid ${colors.primary}; table-layout: fixed;">
+    <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="font-family: ${fontFamily}; font-size: 14px; color: ${colors.text}; background-color: ${colors.background}; border-left: 5px solid ${colors.primary}; table-layout: fixed;">
       <tr>
         ${imageData ? `<td valign=\"top\" width=\"110\" style=\"padding:16px 20px 16px 20px;\"><img src=\"${imageData}\" alt=\"${data.fullName}\" width=\"90\" height=\"90\" style=\"display:block; border:0; border-radius: 50%; border: 2px solid ${colors.primary};\"></td>` : ''}
         <td valign="top" style="padding:16px 20px 16px 20px;">

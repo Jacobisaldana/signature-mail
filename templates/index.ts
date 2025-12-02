@@ -1,4 +1,4 @@
-import { Template, TemplateId } from '../types';
+import { Template, TemplateId, TemplateRenderParams } from '../types';
 import { modernTemplate } from './modern';
 import { minimalistTemplate } from './minimalist';
 import { classicTemplate } from './classic';
